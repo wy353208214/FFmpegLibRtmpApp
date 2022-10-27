@@ -1,0 +1,605 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 51;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		260A42407BA2C5C45647D4A2 /* Pods_MacVideoPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60D776A32AAA4AC7F7E97709 /* Pods_MacVideoPlayer.framework */; };
+		B00221C428C82B7200A48EB6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00221C328C82B7200A48EB6 /* AppDelegate.swift */; };
+		B00221C628C82B7200A48EB6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00221C528C82B7200A48EB6 /* ViewController.swift */; };
+		B00221C828C82B7D00A48EB6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B00221C728C82B7D00A48EB6 /* Assets.xcassets */; };
+		B00221CB28C82B7D00A48EB6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B00221C928C82B7D00A48EB6 /* Main.storyboard */; };
+		B00221F328C8815700A48EB6 /* test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B00221F128C8815700A48EB6 /* test.cpp */; };
+		B002220528C88C8A00A48EB6 /* oc_test.mm in Sources */ = {isa = PBXBuildFile; fileRef = B002220428C88C8A00A48EB6 /* oc_test.mm */; };
+		B00222FB28CB101A00A48EB6 /* audio_recorder.c in Sources */ = {isa = PBXBuildFile; fileRef = B00222FA28CB101A00A48EB6 /* audio_recorder.c */; };
+		B05F14FD28DAA8B000DFD64F /* libavresample.4.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14F428DAA8B000DFD64F /* libavresample.4.0.0.dylib */; };
+		B05F14FE28DAA8B000DFD64F /* libavresample.4.0.0.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B05F14F428DAA8B000DFD64F /* libavresample.4.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B05F14FF28DAA8B000DFD64F /* libavformat.58.76.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14F528DAA8B000DFD64F /* libavformat.58.76.100.dylib */; };
+		B05F150028DAA8B000DFD64F /* libavformat.58.76.100.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B05F14F528DAA8B000DFD64F /* libavformat.58.76.100.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B05F150128DAA8B000DFD64F /* libavutil.56.70.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14F628DAA8B000DFD64F /* libavutil.56.70.100.dylib */; };
+		B05F150228DAA8B000DFD64F /* libavutil.56.70.100.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B05F14F628DAA8B000DFD64F /* libavutil.56.70.100.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B05F150328DAA8B000DFD64F /* libavcodec.58.134.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14F728DAA8B000DFD64F /* libavcodec.58.134.100.dylib */; };
+		B05F150428DAA8B000DFD64F /* libavcodec.58.134.100.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B05F14F728DAA8B000DFD64F /* libavcodec.58.134.100.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B05F150528DAA8B000DFD64F /* libswscale.5.9.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14F828DAA8B000DFD64F /* libswscale.5.9.100.dylib */; };
+		B05F150628DAA8B000DFD64F /* libswscale.5.9.100.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B05F14F828DAA8B000DFD64F /* libswscale.5.9.100.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B05F150728DAA8B000DFD64F /* libpostproc.55.9.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14F928DAA8B000DFD64F /* libpostproc.55.9.100.dylib */; };
+		B05F150828DAA8B000DFD64F /* libpostproc.55.9.100.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B05F14F928DAA8B000DFD64F /* libpostproc.55.9.100.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B05F150928DAA8B100DFD64F /* libswresample.3.9.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14FA28DAA8B000DFD64F /* libswresample.3.9.100.dylib */; };
+		B05F150A28DAA8B100DFD64F /* libswresample.3.9.100.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B05F14FA28DAA8B000DFD64F /* libswresample.3.9.100.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B05F150B28DAA8B100DFD64F /* libavdevice.58.13.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14FB28DAA8B000DFD64F /* libavdevice.58.13.100.dylib */; };
+		B05F150C28DAA8B100DFD64F /* libavdevice.58.13.100.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B05F14FB28DAA8B000DFD64F /* libavdevice.58.13.100.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B05F150D28DAA8B100DFD64F /* libavfilter.7.110.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14FC28DAA8B000DFD64F /* libavfilter.7.110.100.dylib */; };
+		B05F150E28DAA8B100DFD64F /* libavfilter.7.110.100.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B05F14FC28DAA8B000DFD64F /* libavfilter.7.110.100.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B0A0A13629027FD300A491CA /* MyCellItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0A13529027FD300A491CA /* MyCellItem.swift */; };
+		B0A0A13B29067B8A00A491CA /* libz.1.2.8.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A0A13A29067B7700A491CA /* libz.1.2.8.tbd */; };
+		B0A0A13D29067BF200A491CA /* librtmp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A0A13C29067BF200A491CA /* librtmp.dylib */; };
+		B0A0A13E29067BF200A491CA /* librtmp.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B0A0A13C29067BF200A491CA /* librtmp.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B0A0A14029067C1400A491CA /* libssl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A0A13F29067C1400A491CA /* libssl.dylib */; };
+		B0A0A14129067C1400A491CA /* libssl.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B0A0A13F29067C1400A491CA /* libssl.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B0A0A14329067C1A00A491CA /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A0A14229067C1A00A491CA /* libcrypto.dylib */; };
+		B0A0A14429067C1B00A491CA /* libcrypto.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B0A0A14229067C1A00A491CA /* libcrypto.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B0A0A147290681AC00A491CA /* publisher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A0A145290681AC00A491CA /* publisher.cpp */; };
+		B0F9824A28F29E9D00E46A9D /* DetailController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F9824928F29E9D00E46A9D /* DetailController.swift */; };
+		B0F9824D28F50F6500E46A9D /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F9824C28F50F6500E46A9D /* MainController.swift */; };
+		B0F9824F28F541C100E46A9D /* SlidePresentAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F9824E28F541C100E46A9D /* SlidePresentAnimator.swift */; };
+		B0F9825128F5494200E46A9D /* NoMousePassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F9825028F5494200E46A9D /* NoMousePassView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B05F150F28DAA8B100DFD64F /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				B05F150628DAA8B000DFD64F /* libswscale.5.9.100.dylib in Embed Libraries */,
+				B05F150E28DAA8B100DFD64F /* libavfilter.7.110.100.dylib in Embed Libraries */,
+				B05F14FE28DAA8B000DFD64F /* libavresample.4.0.0.dylib in Embed Libraries */,
+				B05F150428DAA8B000DFD64F /* libavcodec.58.134.100.dylib in Embed Libraries */,
+				B05F150A28DAA8B100DFD64F /* libswresample.3.9.100.dylib in Embed Libraries */,
+				B0A0A14429067C1B00A491CA /* libcrypto.dylib in Embed Libraries */,
+				B05F150228DAA8B000DFD64F /* libavutil.56.70.100.dylib in Embed Libraries */,
+				B05F150028DAA8B000DFD64F /* libavformat.58.76.100.dylib in Embed Libraries */,
+				B05F150828DAA8B000DFD64F /* libpostproc.55.9.100.dylib in Embed Libraries */,
+				B0A0A14129067C1400A491CA /* libssl.dylib in Embed Libraries */,
+				B05F150C28DAA8B100DFD64F /* libavdevice.58.13.100.dylib in Embed Libraries */,
+				B0A0A13E29067BF200A491CA /* librtmp.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		19126A9578B8ABB0364AFD92 /* Pods-MacVideoPlayer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MacVideoPlayer.release.xcconfig"; path = "Target Support Files/Pods-MacVideoPlayer/Pods-MacVideoPlayer.release.xcconfig"; sourceTree = "<group>"; };
+		25012A7CC5236E85417B086D /* Pods-MacVideoPlayer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MacVideoPlayer.debug.xcconfig"; path = "Target Support Files/Pods-MacVideoPlayer/Pods-MacVideoPlayer.debug.xcconfig"; sourceTree = "<group>"; };
+		60D776A32AAA4AC7F7E97709 /* Pods_MacVideoPlayer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MacVideoPlayer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B00221C028C82B7200A48EB6 /* MacVideoPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacVideoPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B00221C328C82B7200A48EB6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B00221C528C82B7200A48EB6 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; usesTabs = 0; };
+		B00221C728C82B7D00A48EB6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B00221CA28C82B7D00A48EB6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		B00221CC28C82B7D00A48EB6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B00221CD28C82B7D00A48EB6 /* MacVideoPlayer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MacVideoPlayer.entitlements; sourceTree = "<group>"; };
+		B00221F028C8815600A48EB6 /* MacVideoPlayer-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MacVideoPlayer-Bridging-Header.h"; sourceTree = "<group>"; };
+		B00221F128C8815700A48EB6 /* test.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = test.cpp; sourceTree = "<group>"; };
+		B00221F228C8815700A48EB6 /* test.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = test.hpp; sourceTree = "<group>"; };
+		B002220328C88C8A00A48EB6 /* oc_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = oc_test.h; sourceTree = "<group>"; };
+		B002220428C88C8A00A48EB6 /* oc_test.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = oc_test.mm; sourceTree = "<group>"; };
+		B00222E028C8A4AF00A48EB6 /* libavformat.58.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.58.dylib; path = libs/ffmpeg/libavformat.58.dylib; sourceTree = "<group>"; };
+		B00222E328C8A50400A48EB6 /* libavformat.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.dylib; path = libs/ffmpeg/libavformat.dylib; sourceTree = "<group>"; };
+		B00222E728C8A62200A48EB6 /* libavcodec.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.dylib; path = libs/ffmpeg/libavcodec.dylib; sourceTree = "<group>"; };
+		B00222EA28C8A71A00A48EB6 /* libavutil.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.dylib; path = libs/ffmpeg/libavutil.dylib; sourceTree = "<group>"; };
+		B00222ED28CAE22800A48EB6 /* libavresample.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavresample.dylib; path = libs/ffmpeg/libavresample.dylib; sourceTree = "<group>"; };
+		B00222EE28CAE22800A48EB6 /* libavfilter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavfilter.dylib; path = libs/ffmpeg/libavfilter.dylib; sourceTree = "<group>"; };
+		B00222EF28CAE22900A48EB6 /* libavdevice.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavdevice.dylib; path = libs/ffmpeg/libavdevice.dylib; sourceTree = "<group>"; };
+		B00222F028CAE22900A48EB6 /* libswscale.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswscale.dylib; path = libs/ffmpeg/libswscale.dylib; sourceTree = "<group>"; };
+		B00222F128CAE22900A48EB6 /* libswresample.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswresample.dylib; path = libs/ffmpeg/libswresample.dylib; sourceTree = "<group>"; };
+		B00222F928CB101A00A48EB6 /* audio_recorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = audio_recorder.h; sourceTree = "<group>"; };
+		B00222FA28CB101A00A48EB6 /* audio_recorder.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = audio_recorder.c; sourceTree = "<group>"; };
+		B05F14F428DAA8B000DFD64F /* libavresample.4.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavresample.4.0.0.dylib; path = libs/ffmpeg/libavresample.4.0.0.dylib; sourceTree = "<group>"; };
+		B05F14F528DAA8B000DFD64F /* libavformat.58.76.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.58.76.100.dylib; path = libs/ffmpeg/libavformat.58.76.100.dylib; sourceTree = "<group>"; };
+		B05F14F628DAA8B000DFD64F /* libavutil.56.70.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.56.70.100.dylib; path = libs/ffmpeg/libavutil.56.70.100.dylib; sourceTree = "<group>"; };
+		B05F14F728DAA8B000DFD64F /* libavcodec.58.134.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.58.134.100.dylib; path = libs/ffmpeg/libavcodec.58.134.100.dylib; sourceTree = "<group>"; };
+		B05F14F828DAA8B000DFD64F /* libswscale.5.9.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswscale.5.9.100.dylib; path = libs/ffmpeg/libswscale.5.9.100.dylib; sourceTree = "<group>"; };
+		B05F14F928DAA8B000DFD64F /* libpostproc.55.9.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpostproc.55.9.100.dylib; path = libs/ffmpeg/libpostproc.55.9.100.dylib; sourceTree = "<group>"; };
+		B05F14FA28DAA8B000DFD64F /* libswresample.3.9.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswresample.3.9.100.dylib; path = libs/ffmpeg/libswresample.3.9.100.dylib; sourceTree = "<group>"; };
+		B05F14FB28DAA8B000DFD64F /* libavdevice.58.13.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavdevice.58.13.100.dylib; path = libs/ffmpeg/libavdevice.58.13.100.dylib; sourceTree = "<group>"; };
+		B05F14FC28DAA8B000DFD64F /* libavfilter.7.110.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavfilter.7.110.100.dylib; path = libs/ffmpeg/libavfilter.7.110.100.dylib; sourceTree = "<group>"; };
+		B0A0A13529027FD300A491CA /* MyCellItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCellItem.swift; sourceTree = "<group>"; };
+		B0A0A1372906759100A491CA /* librtmp.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = librtmp.1.dylib; path = "../../../../../usr/local/Cellar/rtmpdump/2.4+20151223_1/lib/librtmp.1.dylib"; sourceTree = "<group>"; };
+		B0A0A13A29067B7700A491CA /* libz.1.2.8.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.8.tbd; path = usr/lib/libz.1.2.8.tbd; sourceTree = SDKROOT; };
+		B0A0A13C29067BF200A491CA /* librtmp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = librtmp.dylib; path = "../../../../../usr/local/Cellar/rtmpdump/2.4+20151223_1/lib/librtmp.dylib"; sourceTree = "<group>"; };
+		B0A0A13F29067C1400A491CA /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = "../../../../../usr/local/Cellar/openssl@3/3.0.5/lib/libssl.dylib"; sourceTree = "<group>"; };
+		B0A0A14229067C1A00A491CA /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = "../../../../../usr/local/Cellar/openssl@3/3.0.5/lib/libcrypto.dylib"; sourceTree = "<group>"; };
+		B0A0A145290681AC00A491CA /* publisher.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = publisher.cpp; sourceTree = "<group>"; };
+		B0A0A146290681AC00A491CA /* publisher.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = publisher.hpp; sourceTree = "<group>"; };
+		B0F9824928F29E9D00E46A9D /* DetailController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailController.swift; sourceTree = "<group>"; };
+		B0F9824C28F50F6500E46A9D /* MainController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainController.swift; sourceTree = "<group>"; };
+		B0F9824E28F541C100E46A9D /* SlidePresentAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlidePresentAnimator.swift; sourceTree = "<group>"; };
+		B0F9825028F5494200E46A9D /* NoMousePassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoMousePassView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B00221BD28C82B7200A48EB6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B05F150328DAA8B000DFD64F /* libavcodec.58.134.100.dylib in Frameworks */,
+				B05F150128DAA8B000DFD64F /* libavutil.56.70.100.dylib in Frameworks */,
+				B05F14FD28DAA8B000DFD64F /* libavresample.4.0.0.dylib in Frameworks */,
+				B05F150B28DAA8B100DFD64F /* libavdevice.58.13.100.dylib in Frameworks */,
+				B05F14FF28DAA8B000DFD64F /* libavformat.58.76.100.dylib in Frameworks */,
+				B0A0A13D29067BF200A491CA /* librtmp.dylib in Frameworks */,
+				B0A0A13B29067B8A00A491CA /* libz.1.2.8.tbd in Frameworks */,
+				B0A0A14329067C1A00A491CA /* libcrypto.dylib in Frameworks */,
+				B0A0A14029067C1400A491CA /* libssl.dylib in Frameworks */,
+				B05F150528DAA8B000DFD64F /* libswscale.5.9.100.dylib in Frameworks */,
+				260A42407BA2C5C45647D4A2 /* Pods_MacVideoPlayer.framework in Frameworks */,
+				B05F150D28DAA8B100DFD64F /* libavfilter.7.110.100.dylib in Frameworks */,
+				B05F150928DAA8B100DFD64F /* libswresample.3.9.100.dylib in Frameworks */,
+				B05F150728DAA8B000DFD64F /* libpostproc.55.9.100.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		03245FD56EAFD05A0E521F85 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B0A0A14229067C1A00A491CA /* libcrypto.dylib */,
+				B0A0A13F29067C1400A491CA /* libssl.dylib */,
+				B0A0A13C29067BF200A491CA /* librtmp.dylib */,
+				B0A0A13A29067B7700A491CA /* libz.1.2.8.tbd */,
+				B0A0A1372906759100A491CA /* librtmp.1.dylib */,
+				B05F14F728DAA8B000DFD64F /* libavcodec.58.134.100.dylib */,
+				B05F14FB28DAA8B000DFD64F /* libavdevice.58.13.100.dylib */,
+				B05F14FC28DAA8B000DFD64F /* libavfilter.7.110.100.dylib */,
+				B05F14F528DAA8B000DFD64F /* libavformat.58.76.100.dylib */,
+				B05F14F428DAA8B000DFD64F /* libavresample.4.0.0.dylib */,
+				B05F14F628DAA8B000DFD64F /* libavutil.56.70.100.dylib */,
+				B05F14F928DAA8B000DFD64F /* libpostproc.55.9.100.dylib */,
+				B05F14FA28DAA8B000DFD64F /* libswresample.3.9.100.dylib */,
+				B05F14F828DAA8B000DFD64F /* libswscale.5.9.100.dylib */,
+				B00222EF28CAE22900A48EB6 /* libavdevice.dylib */,
+				B00222EE28CAE22800A48EB6 /* libavfilter.dylib */,
+				B00222ED28CAE22800A48EB6 /* libavresample.dylib */,
+				B00222F128CAE22900A48EB6 /* libswresample.dylib */,
+				B00222F028CAE22900A48EB6 /* libswscale.dylib */,
+				B00222EA28C8A71A00A48EB6 /* libavutil.dylib */,
+				B00222E728C8A62200A48EB6 /* libavcodec.dylib */,
+				B00222E328C8A50400A48EB6 /* libavformat.dylib */,
+				B00222E028C8A4AF00A48EB6 /* libavformat.58.dylib */,
+				60D776A32AAA4AC7F7E97709 /* Pods_MacVideoPlayer.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		994F39DAEAD01F28637DBFAE /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				25012A7CC5236E85417B086D /* Pods-MacVideoPlayer.debug.xcconfig */,
+				19126A9578B8ABB0364AFD92 /* Pods-MacVideoPlayer.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		B00221B728C82B7200A48EB6 = {
+			isa = PBXGroup;
+			children = (
+				B00221C228C82B7200A48EB6 /* MacVideoPlayer */,
+				B00221C128C82B7200A48EB6 /* Products */,
+				994F39DAEAD01F28637DBFAE /* Pods */,
+				03245FD56EAFD05A0E521F85 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		B00221C128C82B7200A48EB6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B00221C028C82B7200A48EB6 /* MacVideoPlayer.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B00221C228C82B7200A48EB6 /* MacVideoPlayer */ = {
+			isa = PBXGroup;
+			children = (
+				B0F9824B28F50F3300E46A9D /* controller */,
+				B00222F828CB0FD100A48EB6 /* audio */,
+				B00221C328C82B7200A48EB6 /* AppDelegate.swift */,
+				B00221C528C82B7200A48EB6 /* ViewController.swift */,
+				B00221C728C82B7D00A48EB6 /* Assets.xcassets */,
+				B00221C928C82B7D00A48EB6 /* Main.storyboard */,
+				B00221CC28C82B7D00A48EB6 /* Info.plist */,
+				B00221CD28C82B7D00A48EB6 /* MacVideoPlayer.entitlements */,
+				B00221F128C8815700A48EB6 /* test.cpp */,
+				B00221F228C8815700A48EB6 /* test.hpp */,
+				B00221F028C8815600A48EB6 /* MacVideoPlayer-Bridging-Header.h */,
+				B002220328C88C8A00A48EB6 /* oc_test.h */,
+				B002220428C88C8A00A48EB6 /* oc_test.mm */,
+				B0F9824E28F541C100E46A9D /* SlidePresentAnimator.swift */,
+				B0F9825028F5494200E46A9D /* NoMousePassView.swift */,
+				B0A0A145290681AC00A491CA /* publisher.cpp */,
+				B0A0A146290681AC00A491CA /* publisher.hpp */,
+			);
+			path = MacVideoPlayer;
+			sourceTree = "<group>";
+		};
+		B00222F828CB0FD100A48EB6 /* audio */ = {
+			isa = PBXGroup;
+			children = (
+				B00222F928CB101A00A48EB6 /* audio_recorder.h */,
+				B00222FA28CB101A00A48EB6 /* audio_recorder.c */,
+			);
+			path = audio;
+			sourceTree = "<group>";
+		};
+		B0F9824B28F50F3300E46A9D /* controller */ = {
+			isa = PBXGroup;
+			children = (
+				B0F9824928F29E9D00E46A9D /* DetailController.swift */,
+				B0F9824C28F50F6500E46A9D /* MainController.swift */,
+				B0A0A13529027FD300A491CA /* MyCellItem.swift */,
+			);
+			path = controller;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B00221BF28C82B7200A48EB6 /* MacVideoPlayer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B00221D028C82B7D00A48EB6 /* Build configuration list for PBXNativeTarget "MacVideoPlayer" */;
+			buildPhases = (
+				0CD06005916474E3475F5DCC /* [CP] Check Pods Manifest.lock */,
+				B00221BC28C82B7200A48EB6 /* Sources */,
+				B00221BD28C82B7200A48EB6 /* Frameworks */,
+				B00221BE28C82B7200A48EB6 /* Resources */,
+				A06ECF34662D270AC6397B4B /* [CP] Embed Pods Frameworks */,
+				B05F150F28DAA8B100DFD64F /* Embed Libraries */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MacVideoPlayer;
+			productName = MacVideoPlayer;
+			productReference = B00221C028C82B7200A48EB6 /* MacVideoPlayer.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B00221B828C82B7200A48EB6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1220;
+				LastUpgradeCheck = 1220;
+				TargetAttributes = {
+					B00221BF28C82B7200A48EB6 = {
+						CreatedOnToolsVersion = 12.2;
+						LastSwiftMigration = 1220;
+					};
+				};
+			};
+			buildConfigurationList = B00221BB28C82B7200A48EB6 /* Build configuration list for PBXProject "MacVideoPlayer" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = B00221B728C82B7200A48EB6;
+			productRefGroup = B00221C128C82B7200A48EB6 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B00221BF28C82B7200A48EB6 /* MacVideoPlayer */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B00221BE28C82B7200A48EB6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B00221C828C82B7D00A48EB6 /* Assets.xcassets in Resources */,
+				B00221CB28C82B7D00A48EB6 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0CD06005916474E3475F5DCC /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MacVideoPlayer-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A06ECF34662D270AC6397B4B /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MacVideoPlayer/Pods-MacVideoPlayer-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MacVideoPlayer/Pods-MacVideoPlayer-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MacVideoPlayer/Pods-MacVideoPlayer-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B00221BC28C82B7200A48EB6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B00221C628C82B7200A48EB6 /* ViewController.swift in Sources */,
+				B0F9824D28F50F6500E46A9D /* MainController.swift in Sources */,
+				B0F9824F28F541C100E46A9D /* SlidePresentAnimator.swift in Sources */,
+				B002220528C88C8A00A48EB6 /* oc_test.mm in Sources */,
+				B0F9825128F5494200E46A9D /* NoMousePassView.swift in Sources */,
+				B00222FB28CB101A00A48EB6 /* audio_recorder.c in Sources */,
+				B00221C428C82B7200A48EB6 /* AppDelegate.swift in Sources */,
+				B0F9824A28F29E9D00E46A9D /* DetailController.swift in Sources */,
+				B0A0A13629027FD300A491CA /* MyCellItem.swift in Sources */,
+				B0A0A147290681AC00A491CA /* publisher.cpp in Sources */,
+				B00221F328C8815700A48EB6 /* test.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		B00221C928C82B7D00A48EB6 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B00221CA28C82B7D00A48EB6 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		B00221CE28C82B7D00A48EB6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		B00221CF28C82B7D00A48EB6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		B00221D128C82B7D00A48EB6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 25012A7CC5236E85417B086D /* Pods-MacVideoPlayer.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = MacVideoPlayer/MacVideoPlayer.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = MK37J4UMHH;
+				ENABLE_HARDENED_RUNTIME = NO;
+				INFOPLIST_FILE = MacVideoPlayer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/libs/ffmpeg",
+					"/usr/local/Cellar/rtmpdump/2.4+20151223_1/lib",
+					"/usr/local/Cellar/openssl@3/3.0.5/lib",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.hackyang.qpid.MacVideoPlayer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "MacVideoPlayer/MacVideoPlayer-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				"SYSTEM_HEADER_SEARCH_PATHS[arch=*]" = (
+					"/usr/local/Cellar/openssl@3/3.0.5/include",
+					"/usr/local/Cellar/rtmpdump/2.4+20151223_1/include",
+				);
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = /Users/steven/Dev_Project/ios/MacVideoPlayer/include/ffmpeg;
+			};
+			name = Debug;
+		};
+		B00221D228C82B7D00A48EB6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 19126A9578B8ABB0364AFD92 /* Pods-MacVideoPlayer.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = MacVideoPlayer/MacVideoPlayer.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = MK37J4UMHH;
+				ENABLE_HARDENED_RUNTIME = NO;
+				INFOPLIST_FILE = MacVideoPlayer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/libs/ffmpeg",
+					"/usr/local/Cellar/rtmpdump/2.4+20151223_1/lib",
+					"/usr/local/Cellar/openssl@3/3.0.5/lib",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.hackyang.qpid.MacVideoPlayer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "MacVideoPlayer/MacVideoPlayer-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				"SYSTEM_HEADER_SEARCH_PATHS[arch=*]" = (
+					"/usr/local/Cellar/openssl@3/3.0.5/include",
+					"/usr/local/Cellar/rtmpdump/2.4+20151223_1/include",
+				);
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = /Users/steven/Dev_Project/ios/MacVideoPlayer/include/ffmpeg;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B00221BB28C82B7200A48EB6 /* Build configuration list for PBXProject "MacVideoPlayer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B00221CE28C82B7D00A48EB6 /* Debug */,
+				B00221CF28C82B7D00A48EB6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B00221D028C82B7D00A48EB6 /* Build configuration list for PBXNativeTarget "MacVideoPlayer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B00221D128C82B7D00A48EB6 /* Debug */,
+				B00221D228C82B7D00A48EB6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B00221B828C82B7200A48EB6 /* Project object */;
+}

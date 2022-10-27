@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "Test::encodeFrame(AVCodecContext*, AVFrame*, AVPacket*):test.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Test::encodeFrame(AVFrame*, AVPacket*):test.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Test::recordMedia():test.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Test::saveFrameYuv420p(AVFrame*, __sFILE*):test.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Test::openFile(char const*):test.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "MainController.stopClick():MainController.swift">
+      </ContextState>
+      <ContextState
+         contextName = "MainController.collectionView(_:itemForRepresentedObjectAt:):MainController.swift">
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>
