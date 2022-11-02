@@ -9,17 +9,19 @@
 #include "publisher.hpp"
 #include <iostream>
 #include <thread>
+#include "audio/transcode_aac.hpp"
 
 extern "C" {
-    #include "libavformat/avformat.h"
-    #include "libavcodec/avcodec.h"
-    #include "libavcodec/version.h"
-    #include "libavutil/avutil.h"
-    #include "libavdevice/avdevice.h"
-    #include "libavutil/time.h"
-    #include "libavutil/imgutils.h"
-    #include "libswscale/swscale.h"
-    #include "libswresample/swresample.h"
+#include "libavformat/avformat.h"
+#include "libavcodec/avcodec.h"
+#include "libavcodec/version.h"
+#include "libavutil/avutil.h"
+#include "libavdevice/avdevice.h"
+#include "libavutil/time.h"
+#include "libavutil/imgutils.h"
+#include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
+#include "libavutil/audio_fifo.h"
 }
 
 
@@ -50,10 +52,13 @@ void Test::startRecord(RecordType type) {
 
 
 void Test::stopRecord() {
-//    isStop = true;
-    //测试将flv文件推流到服务器
-    Publisher *publish = new Publisher();
-    publish->publish();
+    //    isStop = true;
+    
+    char* mp3_url = "/Users/steven/Desktop/out.flv";
+    char* aac_url = "/Users/steven/Desktop/myaac.aac";
+    Mp3ToAAC* mp3 = new Mp3ToAAC();
+    mp3->mp3_to_aac(mp3_url, aac_url);
+    
 }
 
 void Test::recordAudioTask(){
@@ -97,12 +102,17 @@ void Test::recordAudioTask(){
     avformat_close_input(&avCtx);
     av_packet_free(&avPacket);
     fclose(file);
-
+    
     av_log(NULL, AV_LOG_INFO, "Record PCM End \n");
 }
 
 
+Publisher* publish;
+
 void Test::recordVideoTask(){
+    
+    publish = new Publisher();
+    publish->connect("rtmp://localhost:1935/hls/test");
     
     FILE *h264File = fopen("/Users/steven/Desktop/out.h264", "wb+");
     FILE *file = fopen("/Users/steven/Desktop/video.yuv", "wb+");//a+ 为连续录制，wb+下次会重新录制
@@ -126,7 +136,6 @@ void Test::recordVideoTask(){
     if (avCtx == NULL) {
         return;
     }
-
     
     avformat_find_stream_info(avCtx, NULL);
     int videoIndex = av_find_best_stream(avCtx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
@@ -136,7 +145,7 @@ void Test::recordVideoTask(){
     avcodec_parameters_to_context(codecContext, codecPar);
     avcodec_open2(codecContext, codec, NULL);
     av_log(NULL, DEBUG, "Codec pix format is：%s \n", av_get_pix_fmt_name((AVPixelFormat) codecPar->format));
-
+    
     int packet_size = av_image_get_buffer_size((AVPixelFormat) codecPar->format, 1920, 1080, 1);
     av_log(NULL, AV_LOG_INFO, "Record frame size is: %d \n", packet_size);
     
@@ -146,7 +155,7 @@ void Test::recordVideoTask(){
     AVFrame *outFrame = createFrame(width, height);
     //编码后的packet
     AVPacket *h264Packt = av_packet_alloc();
-
+    
     //从设备读取的packet
     AVPacket *avPacket = av_packet_alloc();
     //packet解码后的frame
@@ -166,9 +175,9 @@ void Test::recordVideoTask(){
         count++;
         
         //这里可以直接保存packet，保存的格式为nv12的yuv
-//        fwrite(avPacket->data, 1, packet_size, file);
-//        fflush(file);
-//        av_log(NULL, AV_LOG_INFO, "pkt size is %d(%p) \n", avPacket->size, avPacket->data);
+        //        fwrite(avPacket->data, 1, packet_size, file);
+        //        fflush(file);
+        //        av_log(NULL, AV_LOG_INFO, "pkt size is %d(%p) \n", avPacket->size, avPacket->data);
         
         
         // 编码转换，把nv12转换成yuv420p，然后将frame保存到yuv文件中。
@@ -178,7 +187,7 @@ void Test::recordVideoTask(){
             return;
         }
         while ((ret = avcodec_receive_frame(codecContext, frame)) >= 0) {
-//            av_log(NULL, DEBUG, "Out Frame pix_fmt is %s \n", av_get_pix_fmt_name((AVPixelFormat) frame->format));
+            //            av_log(NULL, DEBUG, "Out Frame pix_fmt is %s \n", av_get_pix_fmt_name((AVPixelFormat) frame->format));
             if (swsContext == NULL) {
                 swsContext = sws_getContext(frame->width, frame->height, (AVPixelFormat) frame->format, outFrame->width, outFrame->height, (AVPixelFormat) outFrame->format, SWS_BILINEAR, NULL, NULL, NULL);
             }
@@ -191,13 +200,10 @@ void Test::recordVideoTask(){
             outFrame->pts = pts;
             h264Packt->pts = pts;
             //保存frame为yuv文件
-//            saveFrameYuv420p(outFrame, file);
-//            fflush(file);
-            encodeFrame(encodeCtx, outFrame, h264Packt, h264File);
+            //            saveFrameYuv420p(outFrame, file);
+            //            fflush(file);
             
-            //可以将转码后的H264视频流通过librtmp推送到rtmp服务器
-            //...待实现...
-//            publish->sendPacket(h264Packt);
+            encodeFrame(encodeCtx, outFrame, h264Packt, h264File);
             
             fflush(h264File);
             av_packet_unref(h264Packt);
@@ -211,9 +217,11 @@ void Test::recordVideoTask(){
     av_packet_free(&h264Packt);
     av_frame_free(&frame);
     av_frame_free(&outFrame);
-
+    
     fclose(file);
     fclose(h264File);
+    
+    publish->disConnect();
     
     av_log(NULL, AV_LOG_INFO, "Record YUV End \n");
 }
@@ -238,7 +246,7 @@ void Test::openFile(const char* url) {
     if (videoIndex < 0) {
         return;
     }
-
+    
     AVStream *videoStream = avFmtCtx->streams[videoIndex];
     AVCodecParameters* videoParam = videoStream->codecpar;
     AVCodec *videoCodec = avcodec_find_decoder(videoParam->codec_id);
@@ -255,7 +263,7 @@ void Test::openFile(const char* url) {
     
     AVPacket *packet = av_packet_alloc();
     AVFrame *frame = av_frame_alloc();
-
+    
     AVPacket *outPacket =av_packet_alloc();
     FILE *outFile = fopen("/Users/steven/Desktop/out.h264", "w+");
     
@@ -269,7 +277,7 @@ void Test::openFile(const char* url) {
             break;
         
         bool isVideo = packet->stream_index == videoIndex;
-//        av_log(NULL, AV_LOG_INFO, "read packet size is %d and pts is %d, index is %s \n", packet->size, (int) packet->pts, isVideo ? "Video": "Audio");
+        //        av_log(NULL, AV_LOG_INFO, "read packet size is %d and pts is %d, index is %s \n", packet->size, (int) packet->pts, isVideo ? "Video": "Audio");
         if(isVideo) {
             ret = avcodec_send_packet(decodeCtx, packet);
             if (ret != 0) {
@@ -278,7 +286,7 @@ void Test::openFile(const char* url) {
             }
             while(avcodec_receive_frame(decodeCtx, frame) == 0) {
                 av_log(NULL, AV_LOG_INFO, "read frame pts is %d and frame size is %d \n", (int)frame->pts, frame->pkt_size);
-//                encodeFrame(frame, outPacket);
+                //                encodeFrame(frame, outPacket);
             }
             av_packet_unref(outPacket);
         }
@@ -293,7 +301,7 @@ void Test::openFile(const char* url) {
     av_frame_free(&frame);
     fclose(outFile);
     
-
+    
 }
 
 
@@ -316,9 +324,12 @@ void Test::encodeFrame(AVCodecContext *codecContext, AVFrame *frame, AVPacket *a
             exit(1);
         }
         av_log(NULL, AV_LOG_INFO, "Encode receive packet size is %d \n", avPacket->size);
-        //保存数据到文件中
-        fwrite(avPacket->data, 1, avPacket->size, outFile);
+        //        //保存数据到文件中
+        //        fwrite(avPacket->data, 1, avPacket->size, outFile);
+        
+        publish->sendPacket(avPacket);
     }
+    
 }
 
 
@@ -326,25 +337,25 @@ void Test::saveFrameYuv420p(AVFrame *avFrame, FILE *outFile){
     uint32_t pitchY = avFrame->linesize[0];
     uint32_t pitchU = avFrame->linesize[1];
     uint32_t pitchV = avFrame->linesize[2];
-
+    
     uint8_t *avY = avFrame->data[0];
     uint8_t *avU = avFrame->data[1];
     uint8_t *avV = avFrame->data[2];
-
+    
     // yuv420，Y：w * h
     for (uint32_t i = 0; i < avFrame->height; i++)
     {
         // 降低亮度需要降低y分量值的一半
         fwrite(avY + i * pitchY, avFrame->width, 1, outFile);
     }
-
+    
     for (uint32_t i = 0; i < avFrame->height / 2; i++)
     {
         // 消除U分量
         // memset(avU + i * pitchU, 128, avFrame->width / 2);
         fwrite(avU + i * pitchU, avFrame->width / 2, 1, outFile);
     }
-
+    
     for (uint32_t i = 0; i < avFrame->height / 2; i++)
     {
         // 消除V分量
@@ -390,7 +401,7 @@ void Test::openEncoder(AVCodecContext **codecContext, int width, int height) {
     
     //设置编码速度，越慢质量越好
     if (codec->id == AV_CODEC_ID_H264)
-          av_opt_set((*codecContext)->priv_data, "preset", "slow", 0);
+        av_opt_set((*codecContext)->priv_data, "preset", "slow", 0);
     
     if(avcodec_open2(*codecContext, codec, NULL) < 0) {
         av_log(NULL, AV_LOG_ERROR, "Open x264 encoder error \n");
@@ -434,7 +445,8 @@ AVFormatContext* Test::openDevice(){
 
 void Test::convertPcm2AAC(){
     //pcm原始数据必须是双通道，否则aac会有问题
-    char *url = "/Users/steven/Movies/Video/S8.pcm";
+    //    char *url = "/Users/steven/Movies/Video/S8.pcm";
+    char *url = "/Users/steven/Desktop/pcm.pcm";
     char *aac_url = "/Users/steven/Movies/Video/sound.aac";
     
     AVCodec *codec = avcodec_find_encoder_by_name("libfdk_aac");
@@ -472,7 +484,7 @@ void Test::convertPcm2AAC(){
         return;
     }
     //一帧fram的大小 = 一帧采样次数(nb_samples) * 采样通道(channels) * 1次采样大小(2个字节)
-//    int frame_size = frame->nb_samples * frame->channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+    //    int frame_size = frame->nb_samples * frame->channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
     AVPacket *packet = av_packet_alloc();
     FILE *file = fopen(url, "r");
     FILE *aac_file = fopen(aac_url, "w+");
@@ -499,4 +511,222 @@ void Test::convertPcm2AAC(){
     fclose(file);
     fclose(aac_file);
     av_log(NULL, AV_LOG_INFO, "Convert aac end \n");
+}
+
+
+int64_t cur_pts = 0;
+SwrContext *swrContext;
+
+void Test::pushStream() {
+    FILE *pcmFile = fopen("/Users/steven/Desktop/pcm.pcm", "w+");
+    char *input_url =  "/Users/steven/Desktop/out.flv";
+    //    char *input_url =  "/Users/steven/Movies/Video/S8.mp4";
+    char* aac_url = "/Users/steven/Desktop/2.aac";
+    
+    avformat_network_init();
+    AVFormatContext* inFmt = NULL;
+    AVFormatContext* outFmt = NULL;
+    AVCodecContext* deCodecContext;
+    AVCodecContext* aacEnCodecContext; // aac编码器
+    
+    //打开输入文件，解码音频
+    int ret = avformat_open_input(&inFmt, input_url, NULL, NULL);
+    if (ret != 0) {
+        cout<<"Open input file error"<<endl;
+        return;
+    }
+    avformat_find_stream_info(inFmt, NULL);
+    int audioIndex = av_find_best_stream(inFmt, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+    AVStream* audioStream = inFmt->streams[audioIndex];
+    AVCodecParameters* audioPar = audioStream->codecpar;
+    AVCodec* audioCodec = avcodec_find_decoder(audioPar->codec_id);
+    deCodecContext = avcodec_alloc_context3(audioCodec);
+    avcodec_parameters_to_context(deCodecContext, audioPar);
+    
+    ret = avcodec_open2(deCodecContext, audioCodec, NULL);
+    if (ret < 0) {
+        cout<<"Open audio decode failed"<<endl;
+        return;
+    }
+    
+    
+    //打开AAC编码器
+    aacEnCodecContext = openAACEncoder();
+    if (aacEnCodecContext == NULL) {
+        return;
+    }
+    
+    //写入文件上下文
+    outFmt = avformat_alloc_context();
+    const AVOutputFormat *avOutputFormat = av_guess_format(nullptr, aac_url, nullptr);
+    outFmt->oformat = (AVOutputFormat*) avOutputFormat;
+    AVStream *aac_stream = avformat_new_stream(outFmt, aacEnCodecContext->codec);
+    avcodec_parameters_from_context(aac_stream->codecpar, aacEnCodecContext);
+    ret = avio_open(&outFmt->pb, aac_url, AVIO_FLAG_WRITE);
+    if (ret < 0) {
+        cout<<"avio open error ret = "<<ret<<endl;
+        return;
+    }
+    ret = avformat_write_header(outFmt, nullptr);
+    if (ret < 0) {
+        std::cout << "文件头写入失败" << std::endl;
+        return;
+    }
+    
+    
+    //初始化缓冲区AVAudioFifo
+    AVAudioFifo* fifo = av_audio_fifo_alloc(aacEnCodecContext->sample_fmt, aacEnCodecContext->channels, aacEnCodecContext->frame_size);
+    AVPacket* inPacket = av_packet_alloc();
+    AVFrame* inFrame = av_frame_alloc();
+    
+    swrContext = getSwrContext(aacEnCodecContext->channel_layout, aacEnCodecContext->sample_fmt, aacEnCodecContext->sample_rate,
+                               deCodecContext->channel_layout, deCodecContext->sample_fmt, deCodecContext->sample_rate);
+    swr_init(swrContext);
+    uint8_t *buffer = (uint8_t *)av_malloc(192000 * 2);
+    
+    AVFrame* convertFrame = av_frame_alloc();
+    convertFrame->channels = aacEnCodecContext->channels;
+    convertFrame->channel_layout = aacEnCodecContext->channel_layout;
+    convertFrame->format = aacEnCodecContext->sample_fmt;
+    convertFrame->nb_samples = aacEnCodecContext->frame_size;
+    convertFrame->sample_rate = aacEnCodecContext->sample_rate;
+    if(av_frame_get_buffer(convertFrame, 0) < 0) {
+        av_log(NULL, AV_LOG_ERROR, "alloc avframe failed");
+        return;
+    }
+    
+    
+    while (true) {
+        ret = av_read_frame(inFmt, inPacket);
+        if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN)) {
+            cout<<"fifo least data size is "<<av_audio_fifo_size(fifo)<<endl;
+            cout<<"Decode audio packet end"<<endl;
+            break;
+        }else if (ret < 0) {
+            cout<<"Decode audio packet error: ret = "<<ret<<endl;
+            break;
+        }
+        ret = avcodec_send_packet(deCodecContext, inPacket);
+        while (true) {
+            ret = avcodec_receive_frame(deCodecContext, inFrame);
+            if(ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                break;
+            }else if (ret < 0) {
+                cout<<"Decode audio receive frame error: ret = "<<ret<<endl;
+                break;
+            }
+            //            cout<<"格式为："<<av_get_sample_fmt_name((AVSampleFormat) inFrame->format)<<endl;
+            //            swr_convert(swrContext, &buffer, 192000, (const uint8_t**) inFrame->data, inFrame->nb_samples);
+            //            int buffer_size = av_samples_get_buffer_size(NULL, 2, inFrame->nb_samples, AV_SAMPLE_FMT_S16, 1);
+            //            fwrite(buffer, buffer_size, 1, pcmFile);
+            
+            
+            //先转换指定格式
+            swr_convert_frame(swrContext, convertFrame, inFrame);
+            //开始将frame编码为aac
+            encodeToAAC(aacEnCodecContext, outFmt, fifo, convertFrame);
+        }
+    }
+    ret = av_write_trailer(outFmt);
+    cout<<"转换结束"<<endl;
+    
+}
+
+
+void Test::encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* outFmt, AVAudioFifo* fifo, AVFrame* inFrame){
+    
+    cout<<"解码前编码格式为："<<av_get_sample_fmt_name((AVSampleFormat) inFrame->format)<<endl;
+    
+    AVFrame *outFrame = av_frame_alloc();
+    outFrame->channels = encodeContext->channels;
+    outFrame->channel_layout = encodeContext->channel_layout;
+    outFrame->format = encodeContext->sample_fmt;
+    outFrame->nb_samples = encodeContext->frame_size;
+    outFrame->sample_rate = encodeContext->sample_rate;
+    if(av_frame_get_buffer(outFrame, 0) < 0) {
+        av_log(NULL, AV_LOG_ERROR, "alloc avframe failed");
+        return;
+    }
+    
+    //    AVFrame* convertFrame = av_frame_clone(outFrame);
+    
+    //mp3 每个pcm 1152个采样点，所以直接解码得到的fram不能直接塞到编码器编码，需要用AVAudioFifo缓冲器
+    int cache_size = av_audio_fifo_size(fifo);
+    int ret = av_audio_fifo_realloc(fifo, cache_size + inFrame->nb_samples);
+    av_audio_fifo_write(fifo, reinterpret_cast<void **>(inFrame->data), inFrame->nb_samples);
+    ret = av_audio_fifo_size(fifo);
+    cout<<"write fifo number = "<<ret<<endl;
+    
+    
+    AVPacket *outPacket = av_packet_alloc();
+    while(true) {
+        int count = av_audio_fifo_size(fifo);
+        if (count < encodeContext->frame_size) {
+            break;
+        }
+        count = av_audio_fifo_read(fifo, reinterpret_cast<void **>(outFrame->data), encodeContext->frame_size);
+        if (count < 0) {
+            std::cout << "audiofifo 读取数据失败" << std::endl;
+            return;
+        }
+        cur_pts += outFrame->nb_samples;
+        outFrame->pts = cur_pts;
+        
+        ret = avcodec_send_frame(encodeContext, outFrame);
+        while (true) {
+            ret = avcodec_receive_packet(encodeContext, outPacket);
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                std::cout << "avcodec_receive_packet end:" << ret << std::endl;
+                break;
+            } else if (ret < 0) {
+                std::cout << "avcodec_receive_packet fail:" << ret << std::endl;
+                return;
+            } else {
+                cout<<"write file data size = "<<outPacket->size<<endl;
+                //                outPacket->stream_index = aac_index;
+                ret = av_write_frame(outFmt, outPacket);
+                if (ret < 0) {
+                    cout << "av_write_frame fail:" << ret << endl;
+                    return;
+                } else {
+                    cout << "av_write_frame success:" << ret << endl;
+                }
+            }
+        }
+    }
+}
+
+AVCodecContext* Test::openAACEncoder() {
+    //libfdk_aac
+    AVCodec* codec = avcodec_find_encoder_by_name("libfdk_aac");
+    AVCodecContext* encodecContext = avcodec_alloc_context3(codec);
+    encodecContext->sample_rate = 44100;
+    encodecContext->channel_layout = AV_CH_LAYOUT_STEREO;
+    encodecContext->channels = av_get_channel_layout_nb_channels(encodecContext->channel_layout);
+    encodecContext->profile = FF_PROFILE_AAC_HE_V2;
+    encodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
+    encodecContext->bit_rate = 0;
+    encodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
+    
+    
+    //ffmpeg自带的aac
+//    AVCodec* codec = avcodec_find_encoder(AV_CODEC_ID_AAC);
+//    AVCodecContext* encodecContext = avcodec_alloc_context3(codec);
+//    encodecContext->channel_layout = AV_CH_LAYOUT_STEREO;
+//    encodecContext->channels = av_get_channel_layout_nb_channels(encodecContext->channel_layout);
+//    // 如果解码出来的pcm不是44100的则需要进行重采样，重采样需要主要音频时长不变
+//    encodecContext->sample_rate = 44100;
+//    encodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
+//    encodecContext->sample_fmt = AV_SAMPLE_FMT_FLTP;
+//    encodecContext->profile = FF_PROFILE_AAC_LOW;
+//    //ffmpeg默认的aac是不带adts，而fdk_aac默认带adts，这里我们强制不带
+//    encodecContext->flags = AV_CODEC_FLAG_GLOBAL_HEADER;
+    
+    int ret = avcodec_open2(encodecContext, codec, NULL);
+    if (ret < 0) {
+        cout<<"open encode error = "<<ret<<endl;
+        avcodec_free_context(&encodecContext);
+        return NULL;
+    }
+    return encodecContext;
 }

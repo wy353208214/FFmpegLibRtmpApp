@@ -7,16 +7,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "73A55BD5-D105-44B1-840F-0AE36B2267C6"
+            uuid = "E7A7BCA6-0045-4017-907E-D12D4460000D"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "MacVideoPlayer/publisher.cpp"
+            filePath = "MacVideoPlayer/test.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "136"
-            endingLineNumber = "136"
-            landmarkName = "Publisher::readData(filePath)"
+            startingLineNumber = "492"
+            endingLineNumber = "492"
+            landmarkName = "Test::convertPcm2AAC()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

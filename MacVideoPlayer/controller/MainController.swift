@@ -15,12 +15,13 @@ enum UserEvent {
     case Record_Audio
     case Convet_AAC
     case Stop_Record
+    case PUSH_STREAM
 }
 
 class MainController: NSViewController{
     
-    private var events: NSArray = [UserEvent.Record_Video, UserEvent.Record_Audio, UserEvent.Convet_AAC, UserEvent.Stop_Record]
-    private var datas: NSArray = ["录制视频", "录制音频", "PCM转化AAC", "停止录制"]
+    private var events: NSArray = [UserEvent.Record_Video, UserEvent.Record_Audio, UserEvent.Convet_AAC, UserEvent.Stop_Record, UserEvent.PUSH_STREAM]
+    private var datas: NSArray = ["录制视频", "录制音频", "PCM转化AAC", "停止录制", "推流"]
     
     private let ff = oc_test.init()
     
@@ -108,6 +109,10 @@ extension MainController: NSCollectionViewDataSource{
                 print("点击的是：", datas[position])
                 ff.stopRecord()
             case .Convet_AAC:
+                print("点击的是：", datas[position])
+                ff.convertPcm2AAC()
+            case .PUSH_STREAM:
+                ff.pushStream()
                 print("点击的是：", datas[position])
         }
     }

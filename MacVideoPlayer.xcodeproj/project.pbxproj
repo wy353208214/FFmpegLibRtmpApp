@@ -15,6 +15,7 @@
 		B00221F328C8815700A48EB6 /* test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B00221F128C8815700A48EB6 /* test.cpp */; };
 		B002220528C88C8A00A48EB6 /* oc_test.mm in Sources */ = {isa = PBXBuildFile; fileRef = B002220428C88C8A00A48EB6 /* oc_test.mm */; };
 		B00222FB28CB101A00A48EB6 /* audio_recorder.c in Sources */ = {isa = PBXBuildFile; fileRef = B00222FA28CB101A00A48EB6 /* audio_recorder.c */; };
+		B025098F2910FD6000E8081B /* transcode_aac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B025098D2910FD6000E8081B /* transcode_aac.cpp */; };
 		B05F14FD28DAA8B000DFD64F /* libavresample.4.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14F428DAA8B000DFD64F /* libavresample.4.0.0.dylib */; };
 		B05F14FE28DAA8B000DFD64F /* libavresample.4.0.0.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B05F14F428DAA8B000DFD64F /* libavresample.4.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B05F14FF28DAA8B000DFD64F /* libavformat.58.76.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14F528DAA8B000DFD64F /* libavformat.58.76.100.dylib */; };
@@ -85,7 +86,7 @@
 		B00221CC28C82B7D00A48EB6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B00221CD28C82B7D00A48EB6 /* MacVideoPlayer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MacVideoPlayer.entitlements; sourceTree = "<group>"; };
 		B00221F028C8815600A48EB6 /* MacVideoPlayer-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MacVideoPlayer-Bridging-Header.h"; sourceTree = "<group>"; };
-		B00221F128C8815700A48EB6 /* test.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = test.cpp; sourceTree = "<group>"; };
+		B00221F128C8815700A48EB6 /* test.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = test.cpp; sourceTree = "<group>"; wrapsLines = 0; };
 		B00221F228C8815700A48EB6 /* test.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = test.hpp; sourceTree = "<group>"; };
 		B002220328C88C8A00A48EB6 /* oc_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = oc_test.h; sourceTree = "<group>"; };
 		B002220428C88C8A00A48EB6 /* oc_test.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = oc_test.mm; sourceTree = "<group>"; };
@@ -100,6 +101,8 @@
 		B00222F128CAE22900A48EB6 /* libswresample.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswresample.dylib; path = libs/ffmpeg/libswresample.dylib; sourceTree = "<group>"; };
 		B00222F928CB101A00A48EB6 /* audio_recorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = audio_recorder.h; sourceTree = "<group>"; };
 		B00222FA28CB101A00A48EB6 /* audio_recorder.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = audio_recorder.c; sourceTree = "<group>"; };
+		B025098D2910FD6000E8081B /* transcode_aac.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = transcode_aac.cpp; sourceTree = "<group>"; };
+		B025098E2910FD6000E8081B /* transcode_aac.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = transcode_aac.hpp; sourceTree = "<group>"; };
 		B05F14F428DAA8B000DFD64F /* libavresample.4.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavresample.4.0.0.dylib; path = libs/ffmpeg/libavresample.4.0.0.dylib; sourceTree = "<group>"; };
 		B05F14F528DAA8B000DFD64F /* libavformat.58.76.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.58.76.100.dylib; path = libs/ffmpeg/libavformat.58.76.100.dylib; sourceTree = "<group>"; };
 		B05F14F628DAA8B000DFD64F /* libavutil.56.70.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.56.70.100.dylib; path = libs/ffmpeg/libavutil.56.70.100.dylib; sourceTree = "<group>"; };
@@ -235,6 +238,8 @@
 			children = (
 				B00222F928CB101A00A48EB6 /* audio_recorder.h */,
 				B00222FA28CB101A00A48EB6 /* audio_recorder.c */,
+				B025098D2910FD6000E8081B /* transcode_aac.cpp */,
+				B025098E2910FD6000E8081B /* transcode_aac.hpp */,
 			);
 			path = audio;
 			sourceTree = "<group>";
@@ -369,6 +374,7 @@
 				B0F9824F28F541C100E46A9D /* SlidePresentAnimator.swift in Sources */,
 				B002220528C88C8A00A48EB6 /* oc_test.mm in Sources */,
 				B0F9825128F5494200E46A9D /* NoMousePassView.swift in Sources */,
+				B025098F2910FD6000E8081B /* transcode_aac.cpp in Sources */,
 				B00222FB28CB101A00A48EB6 /* audio_recorder.c in Sources */,
 				B00221C428C82B7200A48EB6 /* AppDelegate.swift in Sources */,
 				B0F9824A28F29E9D00E46A9D /* DetailController.swift in Sources */,

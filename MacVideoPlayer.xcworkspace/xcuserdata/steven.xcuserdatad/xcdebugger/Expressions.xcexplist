@@ -3,25 +3,58 @@
    version = "1.0">
    <ContextStates>
       <ContextState
+         contextName = "Publisher::isBigEnd():publisher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "MainController.collectionView(_:itemForRepresentedObjectAt:):MainController.swift">
+      </ContextState>
+      <ContextState
          contextName = "Test::encodeFrame(AVCodecContext*, AVFrame*, AVPacket*):test.cpp">
-      </ContextState>
-      <ContextState
-         contextName = "Test::encodeFrame(AVFrame*, AVPacket*):test.cpp">
-      </ContextState>
-      <ContextState
-         contextName = "Test::recordMedia():test.cpp">
       </ContextState>
       <ContextState
          contextName = "Test::saveFrameYuv420p(AVFrame*, __sFILE*):test.cpp">
       </ContextState>
       <ContextState
-         contextName = "Test::openFile(char const*):test.cpp">
+         contextName = "Test::encodeToAAC(AVCodecContext*, AVFrame*):test.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "outFrame-&gt;sample_fmt">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "Test::encodeFrame(AVFrame*, AVPacket*):test.cpp">
       </ContextState>
       <ContextState
          contextName = "MainController.stopClick():MainController.swift">
       </ContextState>
       <ContextState
-         contextName = "MainController.collectionView(_:itemForRepresentedObjectAt:):MainController.swift">
+         contextName = "Publisher::connect(char*):publisher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Publisher::sendPacket(AVPacket*):publisher.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "avPacket-&gt;data[4]">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "Test::recordMedia():test.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Publisher::readData(char*):publisher.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Test::openFile(char const*):test.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "Test::encodeFrame(AVCodecContext*, AVFrame*, AVPacket*, __sFILE*):test.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "avPacket-&gt;data[10]">
+            </PersistentString>
+         </PersistentStrings>
       </ContextState>
    </ContextStates>
 </VariablesViewState>

@@ -15,6 +15,8 @@ extern "C" {
     #include "libavcodec/packet.h"
     #include "libavcodec/avcodec.h"
     #include "libavformat/avformat.h"
+    #include "libavutil/audio_fifo.h"
+    #include "libswresample/swresample.h"
 }
 
 enum RecordType {
@@ -29,10 +31,12 @@ public:
     void stopRecord();
     void convertPcm2AAC();
     void openFile(const char* url);
+    void pushStream();
 
     
 private:
     bool isStop = false;
+    
     void recordAudioTask();
     void recordVideoTask();
     
@@ -73,6 +77,17 @@ private:
     @return 返回一个设备上下文
      */
     AVFormatContext* openDevice();
+    
+    void encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* encodeFmt, AVAudioFifo* fifo, AVFrame* inFrame);
+    
+    AVCodecContext* openAACEncoder();
+    
+    SwrContext* getSwrContext(int64_t out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate,
+                              int64_t  in_ch_layout, enum AVSampleFormat  in_sample_fmt, int  in_sample_rate) {
+        SwrContext* swr_Context = swr_alloc();
+        swr_alloc_set_opts(swr_Context, out_ch_layout, out_sample_fmt, out_sample_rate, in_ch_layout, in_sample_fmt, in_sample_rate, 1, NULL);
+        return swr_Context;
+    }
 };
 
 

@@ -48,7 +48,9 @@ void Publisher::sendPacket(AVPacket *avPacket){
     //全局packet，第一次判断是否为null
     if (packet == NULL) {
         packet = new RTMPPacket();
-        RTMPPacket_Alloc(packet, 64 * 1024);
+        if (!RTMPPacket_Alloc(packet, 64 * 1024 *100)) {
+            cout<<"Alloc RTMPPacket failed"<<endl;
+        }
         RTMPPacket_Reset(packet);
         packet->m_hasAbsTimestamp = 0;
         packet->m_nChannel = 0x4;
@@ -56,13 +58,14 @@ void Publisher::sendPacket(AVPacket *avPacket){
     }
     
     //读取AVPacket中的数据，转换成RTMPPacket
+//    for(int i = 0;i<avPacket->size;i++) {
+//        cout<<"Send RTMP Packet："<<avPacket->data[i]<<endl;
+//    }
     memcpy(packet->m_body, avPacket->data, avPacket->size);
     packet->m_nBodySize = avPacket->size;
     packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
     packet->m_nTimeStamp = (uint32_t) avPacket->pts;
     packet->m_packetType = RTMP_PACKET_TYPE_VIDEO;
-    
-    
     //发送rtmp数据包
     RTMP_SendPacket(rtmp, packet, 0);
     

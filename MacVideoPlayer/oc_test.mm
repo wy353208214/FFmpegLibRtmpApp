@@ -47,4 +47,8 @@ Test *myTest;
     myTest->openFile(ul);
 }
 
+- (void) pushStream {
+    myTest->pushStream();
+}
+
 @end

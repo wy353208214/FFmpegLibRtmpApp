@@ -21,6 +21,7 @@ typedef NS_ENUM(NSInteger, ORecordType) {
 - (void) stopRecord;
 - (void) convertPcm2AAC;
 - (void) openFile: (NSString*) url;
+- (void) pushStream;
 
 
 @end

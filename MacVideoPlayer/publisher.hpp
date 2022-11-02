@@ -29,7 +29,8 @@ public:
 
 private:
     RTMP *rtmp = NULL;
-    RTMPPacket* packet;
+    RTMPPacket* packet = NULL;
+    
 };
 
 
