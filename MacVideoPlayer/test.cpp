@@ -9,7 +9,6 @@
 #include "publisher.hpp"
 #include <iostream>
 #include <thread>
-#include "audio/transcode_aac.hpp"
 
 extern "C" {
 #include "libavformat/avformat.h"
@@ -53,11 +52,6 @@ void Test::startRecord(RecordType type) {
 
 void Test::stopRecord() {
     //    isStop = true;
-    
-    char* mp3_url = "/Users/steven/Desktop/out.flv";
-    char* aac_url = "/Users/steven/Desktop/myaac.aac";
-    Mp3ToAAC* mp3 = new Mp3ToAAC();
-    mp3->mp3_to_aac(mp3_url, aac_url);
     
 }
 
