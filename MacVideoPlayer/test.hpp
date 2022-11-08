@@ -17,6 +17,7 @@ extern "C" {
     #include "libavformat/avformat.h"
     #include "libavutil/audio_fifo.h"
     #include "libswresample/swresample.h"
+    #include "libswscale/swscale.h"
 }
 
 enum RecordType {
@@ -36,21 +37,14 @@ public:
     
 private:
     bool isStop = false;
-
     SwrContext* swrContext;
+    SwsContext* swsContext;
+    
     
     void recordAudioTask();
     void recordVideoTask();
     
-    /**
-     采用h264编码AVFrame为AVPacket，并保存到outFile文件中
-     @param codecContext 编码器上下文
-     @param frame 编码前的frame数据
-     @param avPacket 编码后packet数据
-     @param outFile 保存的文件
-     */
-    void encodeToH264(AVCodecContext *codecContext, AVFrame *frame, AVPacket *avPacket, FILE *outFile);
-    
+
     /**
      将格式为yuv420p的avframe保存到文件中
      @param avFrame 保存后的frame数据
@@ -64,18 +58,26 @@ private:
      @param height
      @return 返回一个AVFrame指针
      */
-    AVFrame* createFrame(int width, int height);
-    
+    AVFrame* createYUV420Frame(int width, int height);
     
     AVCodecContext* openDecoder(AVFormatContext *fmtContext, int index);
-    
-
     
     /**
      打开video/audio的输入设备
     @return 返回一个设备上下文
      */
     AVFormatContext* openDevice();
+    
+    
+    /**
+     采用h264编码AVFrame为AVPacket，并保存到outFile文件中
+     @param codecContext 编码器上下文
+     @param frame 编码前的frame数据
+     @param avPacket 编码后packet数据
+     @param outFile 保存的文件
+     */
+    void encodeToH264(AVCodecContext *codecContext, AVFrame *frame, AVPacket *avPacket, FILE *outFile);
+    
     
     /**
      编码AAC
