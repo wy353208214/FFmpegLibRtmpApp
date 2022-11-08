@@ -10,12 +10,21 @@
 
 @implementation oc_test
 
-Test *myTest;
+MediaManager *myTest;
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        if (myTest == NULL) {
+            myTest = new MediaManager();
+        }
+    }
+    return self;
+}
 
 - (void) startRecord: (ORecordType) type {
-    if (myTest == NULL) {
-        myTest = new Test();
-    }
+
     switch (type) {
         case OC_VIDEO:
             myTest->startRecord(VIDEO);

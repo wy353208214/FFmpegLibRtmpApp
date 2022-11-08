@@ -25,7 +25,7 @@ enum RecordType {
     ALL,
 };
 
-class Test{
+class MediaManager{
 public:
     void startRecord(RecordType type);
     void stopRecord();
@@ -36,6 +36,8 @@ public:
     
 private:
     bool isStop = false;
+
+    SwrContext* swrContext;
     
     void recordAudioTask();
     void recordVideoTask();
@@ -47,7 +49,7 @@ private:
      @param avPacket 编码后packet数据
      @param outFile 保存的文件
      */
-    void encodeFrame(AVCodecContext *codecContext, AVFrame *frame, AVPacket *avPacket, FILE *outFile);
+    void encodeToH264(AVCodecContext *codecContext, AVFrame *frame, AVPacket *avPacket, FILE *outFile);
     
     /**
      将格式为yuv420p的avframe保存到文件中
@@ -64,13 +66,10 @@ private:
      */
     AVFrame* createFrame(int width, int height);
     
-    /**
-     打开编码器
-     @param codecContext 传入的AVCodecContext上下文，打开编码器后赋值给其
-     @param width 输出宽度
-     @param height 输出高度
-     */
-    void openEncoder(AVCodecContext **codecContext, int width, int height);
+    
+    AVCodecContext* openDecoder(AVFormatContext *fmtContext, int index);
+    
+
     
     /**
      打开video/audio的输入设备
@@ -78,9 +77,26 @@ private:
      */
     AVFormatContext* openDevice();
     
+    /**
+     编码AAC
+     */
     void encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* encodeFmt, AVAudioFifo* fifo, AVFrame* inFrame);
     
+    /**
+     打开AAC编码器
+     */
     AVCodecContext* openAACEncoder();
+    
+    
+    /**
+     打开编码器
+     @param codecContext 传入的AVCodecContext上下文，打开编码器后赋值给其
+     @param width 输出宽度
+     @param height 输出高度
+     @return 0 成功，< 0 失败
+     */
+    int openH264Encoder(AVCodecContext **codecContext, int width, int height);
+    
     
     SwrContext* getSwrContext(int64_t out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate,
                               int64_t  in_ch_layout, enum AVSampleFormat  in_sample_fmt, int  in_sample_rate) {
