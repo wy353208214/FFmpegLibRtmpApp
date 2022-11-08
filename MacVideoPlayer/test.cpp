@@ -106,16 +106,15 @@ void MediaManager::recordVideoTask(){
     char* h264_url = "/Users/steven/Desktop/out.h264";
     char* yuv_url = "/Users/steven/Desktop/video.yuv";
     
-    FILE *h264File = fopen(h264_url, "wb+");
-    FILE *file = fopen(yuv_url, "wb+");//a+ 为连续录制，wb+下次会重新录制
+//    FILE *file = fopen(yuv_url, "wb+");//a+ 为连续录制，wb+下次会重新录制
     
     av_log_set_level(AV_LOG_DEBUG);
     avdevice_register_all();
     
     //编码上下文
-    AVCodecContext *encodeCtx = NULL;
+    AVCodecContext *h264EncodeCtx = NULL;
     AVFormatContext *inFmt = NULL;
-    AVFormatContext *outFmt = NULL;
+    AVFormatContext *h264OutFmt = NULL;
     //yuv420p转换器
     SwsContext *swsCtx = NULL;
     
@@ -144,13 +143,24 @@ void MediaManager::recordVideoTask(){
     av_log(NULL, AV_LOG_INFO, "Record frame size is: %d \n", packet_size);
     
     
-    //打开输出avformatContext
-//    avformat_alloc_output_context2(outFmt, <#AVOutputFormat *oformat#>, <#const char *format_name#>, <#const char *filename#>)
-    
-    
-    
     //打开编码器
-    openH264Encoder(&encodeCtx, width, height);
+    openH264Encoder(&h264EncodeCtx, width, height);
+    
+    //打开输出avformatContext
+    h264OutFmt = avformat_alloc_context();
+    const AVOutputFormat *avOutputFormat = av_guess_format(nullptr, h264_url, nullptr);
+    h264OutFmt->oformat = (AVOutputFormat*) avOutputFormat;
+    AVStream *h264_stream = avformat_new_stream(h264OutFmt, h264EncodeCtx->codec);
+    avcodec_parameters_from_context(h264_stream->codecpar, h264EncodeCtx);
+    if (avio_open(&h264OutFmt->pb, h264_url, AVIO_FLAG_WRITE) < 0) {
+        cout<<"avio open h264 file error"<<endl;
+        return;
+    }
+    if (avformat_write_header(h264OutFmt, nullptr) < 0) {
+        cout << "文件头写入失败" <<endl;
+        return;
+    }
+    
     
     //创建转换为yuv420p的的outFrame
     AVFrame *outFrame = createYUV420Frame(width, height);
@@ -158,13 +168,13 @@ void MediaManager::recordVideoTask(){
     AVPacket *h264Packt = av_packet_alloc();
     
     //从设备读取的packet
-    AVPacket *avPacket = av_packet_alloc();
+    AVPacket *inPacket = av_packet_alloc();
     //packet解码后的frame
     AVFrame *frame = av_frame_alloc();
     int count = 0;
     int numFrame = 0;
     while (isStop || count <= 200) {
-        int ret = av_read_frame(inFmt, avPacket);
+        int ret = av_read_frame(inFmt, inPacket);
         if(ret == -35) {
             continue;
         }
@@ -182,7 +192,7 @@ void MediaManager::recordVideoTask(){
         
         
         // 编码转换，把nv12转换成yuv420p，然后将frame保存到yuv文件中。
-        ret = avcodec_send_packet(codecContext, avPacket);
+        ret = avcodec_send_packet(codecContext, inPacket);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "send packet error");
             return;
@@ -194,7 +204,7 @@ void MediaManager::recordVideoTask(){
             }
             sws_scale(swsCtx, (const uint8_t *const *)frame->data, frame->linesize, 0, frame->height, outFrame->data, outFrame->linesize);
             //这里要设置pts，否则会花屏，先计算每一帧的pts，然后累加即可，也可以直接设置为outframe->pts = frame->pts
-            double frame_pts = av_q2d(encodeCtx->time_base);
+            double frame_pts = av_q2d(h264EncodeCtx->time_base);
             //转换成毫秒
             
             int64_t pts = frame_pts * 1000 * numFrame++;
@@ -204,25 +214,23 @@ void MediaManager::recordVideoTask(){
             //            saveFrameYuv420p(outFrame, file);
             //            fflush(file);
             
-            encodeToH264(encodeCtx, outFrame, h264Packt, h264File);
-            
-            fflush(h264File);
+            encodeToH264(h264EncodeCtx, h264OutFmt ,outFrame, h264Packt);
             av_packet_unref(h264Packt);
         }
-        av_packet_unref(avPacket);
+        av_packet_unref(inPacket);
     }
     //将缓存区的数据全部输出
-    encodeToH264(encodeCtx, NULL, h264Packt, h264File);
+    encodeToH264(h264EncodeCtx, h264OutFmt ,outFrame, h264Packt);
+    
     avformat_close_input(&inFmt);
-    av_packet_free(&avPacket);
+    avio_close(h264OutFmt->pb);
+    av_packet_free(&inPacket);
     av_packet_free(&h264Packt);
     av_frame_free(&frame);
     av_frame_free(&outFrame);
     
-    fclose(file);
-    fclose(h264File);
-    
-    publish->disConnect();
+//    fclose(file);
+//    fclose(h264File);
     
     av_log(NULL, AV_LOG_INFO, "Record YUV End \n");
 }
@@ -584,7 +592,7 @@ void MediaManager::pushStream() {
                 swrOutFrame->pts = pts;
                 outPacket->pts = pts;
                 
-                encodeToH264(h264EnCodecContext, swsOutFrame, outPacket, NULL);
+//                encodeToH264(h264EnCodecContext, swsOutFrame, outPacket, NULL);
                 av_packet_unref(outPacket);
             }
         }
@@ -665,7 +673,7 @@ void MediaManager::encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* o
 }
 
 
-void MediaManager::encodeToH264(AVCodecContext *codecContext, AVFrame *frame, AVPacket *avPacket, FILE *outFile) {
+void MediaManager::encodeToH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *frame, AVPacket *avPacket) {
     if (codecContext == NULL)
         return;
     
@@ -684,13 +692,7 @@ void MediaManager::encodeToH264(AVCodecContext *codecContext, AVFrame *frame, AV
             exit(1);
         }
         av_log(NULL, AV_LOG_INFO, "Encode receive packet size is %d \n", avPacket->size);
-        
-        
-        //        //保存数据到文件中
-//        if (outFile == NULL) {
-//            fwrite(avPacket->data, 1, avPacket->size, outFile);
-//        }
-        
+        av_write_frame(outFmtContext, avPacket);
     }
     
 }

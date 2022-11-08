@@ -72,11 +72,11 @@ private:
     /**
      采用h264编码AVFrame为AVPacket，并保存到outFile文件中
      @param codecContext 编码器上下文
+     @param outFmtContext 输出上下文
      @param frame 编码前的frame数据
      @param avPacket 编码后packet数据
-     @param outFile 保存的文件
      */
-    void encodeToH264(AVCodecContext *codecContext, AVFrame *frame, AVPacket *avPacket, FILE *outFile);
+    void encodeToH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *frame, AVPacket *avPacket);
     
     
     /**
