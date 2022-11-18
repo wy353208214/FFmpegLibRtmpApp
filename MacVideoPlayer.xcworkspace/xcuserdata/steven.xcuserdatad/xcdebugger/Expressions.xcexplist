@@ -40,6 +40,14 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
+         contextName = "MediaManager::pushStream():test.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "inFmt">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "Test::recordMedia():test.cpp">
       </ContextState>
       <ContextState
