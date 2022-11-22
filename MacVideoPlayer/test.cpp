@@ -456,7 +456,8 @@ void MediaManager::convertPcm2AAC(){
 
 int64_t cur_pts = 0;
 void MediaManager::pushStream() {
-    char *input_url =  "/Users/steven/Movies/Video/S8.flv";
+//    char *input_url =  "/Users/steven/Movies/Video/S8.flv";
+    char *input_url =  "/Users/steven/Desktop/out.flv";
     char* rtmp_url = "rtmp://localhost:1935/hls/test";
     
     avformat_network_init();
@@ -484,9 +485,6 @@ void MediaManager::pushStream() {
     int videoIndex = av_find_best_stream(inFmt, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
     videoDecodeCtx = openDecoder(inFmt, videoIndex);
     
-    cout<<"Video pix_fmt is: "<<av_get_pix_fmt_name(videoDecodeCtx->pix_fmt)<<endl;
-    cout<<"Audio sample_fmt is: "<<av_get_sample_fmt_name(audioDecodeCtx->sample_fmt)<<endl;
-    
     //打开AAC编码器
     aacEnCodecContext = openAACEncoder();
     if (aacEnCodecContext == NULL) {
@@ -504,43 +502,25 @@ void MediaManager::pushStream() {
         return;
     }
     
-    //设置管到流输出流
-    for (int i = 0; i < inFmt->nb_streams; i++) {
-        AVStream *inStream = inFmt->streams[i];
-        const struct AVCodec* outCodec = NULL;
-        AVCodecParameters* outCodecPar = NULL;
-        if (inStream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
-            //如果是音频则改为AAC
-            outCodec = aacEnCodecContext->codec;
-            outCodecPar = avcodec_parameters_alloc();
-            avcodec_parameters_from_context(outCodecPar, aacEnCodecContext);
-        }else if(inStream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-            //如果是视频则改为h264
-            outCodec = h264EnCodecContext->codec;
-            outCodecPar = avcodec_parameters_alloc();
-            avcodec_parameters_from_context(outCodecPar, h264EnCodecContext);
-        }else {
-            outCodec = avcodec_find_decoder(inStream->codecpar->codec_id);
-            outCodecPar = inStream->codecpar;
-        }
-        AVStream *outStream = avformat_new_stream(rtmpOutFmt, outCodec);
-        avcodec_parameters_copy(outStream->codecpar, outCodecPar);
-        outStream->codecpar->codec_tag = 0;
-    }
+    //aac编码流
+    audioStream = avformat_new_stream(rtmpOutFmt, aacEnCodecContext->codec);
+    audioStream->codecpar->codec_tag = 0;
+    audioStream->time_base = aacEnCodecContext->time_base;
+    avcodec_parameters_from_context(audioStream->codecpar, aacEnCodecContext);
+    if (rtmpOutFmt->oformat->flags & AVFMT_GLOBALHEADER)
+        aacEnCodecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     
-    //    //rtmp视频通道
-    //    AVStream* rtmpVideoStream = avformat_new_stream(rtmpOutFmt, h264EnCodecContext->codec);
-    //    AVCodecParameters* rtmpVideoPar = avcodec_parameters_alloc();
-    //    avcodec_parameters_from_context(rtmpVideoPar, h264EnCodecContext);
-    //    avcodec_parameters_copy(rtmpVideoStream->codecpar, rtmpVideoPar);
-    //    rtmpVideoStream->codecpar->codec_tag = 0;
-    //    //rtmp音频通道
-    //    AVStream* rtmpAudioStream = avformat_new_stream(rtmpOutFmt, aacEnCodecContext->codec);
-    //    AVCodecParameters* rtmpAudioPar = avcodec_parameters_alloc();
-    //    avcodec_parameters_from_context(rtmpAudioPar, aacEnCodecContext);
-    //    avcodec_parameters_copy(rtmpAudioStream->codecpar, rtmpAudioPar);
-    //    rtmpAudioStream->codecpar->codec_tag = 0;
+    // h264编码流
+    videoStream = avformat_new_stream(rtmpOutFmt, h264EnCodecContext->codec);
+    videoStream->codecpar->codec_tag = 0;
+    videoStream->time_base = h264EnCodecContext->time_base;
+    avcodec_parameters_from_context(videoStream->codecpar, h264EnCodecContext);
+    if (rtmpOutFmt->oformat->flags & AVFMT_GLOBALHEADER)
+        h264EnCodecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     
+    
+
+    av_dump_format(rtmpOutFmt, 0, rtmp_url, 1);
     //打开rtmp通道
     ret = avio_open(&(rtmpOutFmt->pb), rtmp_url, AVIO_FLAG_WRITE);
     if (ret < 0) {
@@ -582,8 +562,11 @@ void MediaManager::pushStream() {
     //开始解码读取数据
     AVPacket* inPacket = av_packet_alloc();
     AVPacket* outPacket = av_packet_alloc();
-    AVFrame* inFrame = av_frame_alloc();
+    AVFrame* audioFrame = av_frame_alloc();
+    AVFrame* videoFrame = av_frame_alloc();
+    long long startTime = av_gettime();
     int numFrame = 0;
+    
     while (true) {
         ret = av_read_frame(inFmt, inPacket);
         if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN)) {
@@ -595,11 +578,11 @@ void MediaManager::pushStream() {
             break;
         }
         
+        // 音频mp3转aac
         if (inPacket->stream_index == audioIndex) {
-            //音频处理
             ret = avcodec_send_packet(audioDecodeCtx, inPacket);
             while (true) {
-                ret = avcodec_receive_frame(audioDecodeCtx, inFrame);
+                ret = avcodec_receive_frame(audioDecodeCtx, audioFrame);
                 if(ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
                     break;
                 }else if (ret < 0) {
@@ -607,45 +590,65 @@ void MediaManager::pushStream() {
                     break;
                 }
                 //先转换指定格式
-                swr_convert_frame(swrContext, swrOutFrame, inFrame);
+                swr_convert_frame(swrContext, swrOutFrame, audioFrame);
+                swrOutFrame->pts = audioFrame->pts;
+                swrOutFrame->pkt_dts = audioFrame->pkt_dts;
+                swrOutFrame->pkt_pts = audioFrame->pkt_pts;
+                swrOutFrame->pkt_duration = audioFrame->pkt_duration;
                 //开始将frame编码为aac
                 encodeToAAC(aacEnCodecContext, rtmpOutFmt, fifo, swrOutFrame);
+                av_packet_unref(inPacket);
             }
-        } else if (inPacket->stream_index == videoIndex) {
-            //视频处理
-            ret = avcodec_send_packet(videoDecodeCtx, inPacket);
-            while (true) {
-                ret = avcodec_receive_frame(videoDecodeCtx, inFrame);
-                if(ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                    break;
-                }else if (ret < 0) {
-                    cout<<"Decode video receive frame error: ret = "<<ret<<endl;
-                    break;
-                }
-                //先转换指定格式
-                sws_scale(swsContext, (const uint8_t *const *) inFrame->data, inFrame->linesize, 0, inFrame->height, swsOutFrame->data, swsOutFrame->linesize);
-                //这里要设置pts，否则会花屏，先计算每一帧的pts，然后累加即可，也可以直接设置为outframe->pts = frame->pts
-                double frame_pts = av_q2d(h264EnCodecContext->time_base);
-                //转换成毫秒
-                int64_t pts = frame_pts * 1000 * numFrame++;
-                swsOutFrame->pts = pts;
-                outPacket->pts = pts;
-                encodeToH264(h264EnCodecContext, rtmpOutFmt, swsOutFrame, outPacket);
-                av_packet_unref(outPacket);
-            }
+
         }
+        // 视频flv转h264
+        else if(inPacket->stream_index == videoIndex) {
+                ret = avcodec_send_packet(videoDecodeCtx, inPacket);
+                while (true) {
+                    ret = avcodec_receive_frame(videoDecodeCtx, videoFrame);
+                    if(ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                        break;
+                    }else if (ret < 0) {
+                        cout<<"Decode video receive frame error: ret = "<<ret<<endl;
+                        break;
+                    }
+
+                    AVRational tb = inFmt->streams[inPacket->stream_index]->time_base;
+                    int64_t dts = av_rescale_q(inPacket->dts, tb, av_get_time_base_q());
+                    //已经过去的时间
+                    int64_t now = av_gettime() - startTime;
+                    if (dts > now) {
+                        cout<<"休息会"<<endl;
+                        av_usleep((int)(dts - now));
+                    }
+
+                    //先转换指定格式
+                    sws_scale(swsContext, (const uint8_t *const *) videoFrame->data, videoFrame->linesize, 0, videoFrame->height, swsOutFrame->data, swsOutFrame->linesize);
+                    //这里要设置pts，否则会花屏，先计算每一帧的pts，然后累加即可，也可以直接设置为outframe->pts = frame->pts
+                    double frame_pts = av_q2d(h264EnCodecContext->time_base);
+                    int64_t pts = frame_pts * 1000 * numFrame++;
+                    swsOutFrame->pts = pts;
+                    outPacket->pts = pts;
+                    outPacket->dts = pts;
+                    outPacket->stream_index = videoStream->index;
+                    encodeToH264(h264EnCodecContext, rtmpOutFmt, swsOutFrame, outPacket);
+                    av_packet_unref(outPacket);
+                }
+        }
+        
     }
     av_write_trailer(rtmpOutFmt);
     av_packet_free(&inPacket);
     av_packet_free(&outPacket);
-    av_frame_free(&inFrame);
+    av_frame_free(&videoFrame);
+    av_frame_free(&audioFrame);
     
     cout<<"转换结束"<<endl;
     
 }
 
-int frame_index = 0;
 
+int frame_index = 0;
 void MediaManager::encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* outFmt, AVAudioFifo* fifo, AVFrame* inFrame){
     
     AVFrame *outFrame = av_frame_alloc();
@@ -684,32 +687,28 @@ void MediaManager::encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* o
         while (true) {
             ret = avcodec_receive_packet(encodeContext, outPacket);
             if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                cout << "avcodec_receive_packet end:" << ret << endl;
+                cout << "Audio avcodec_receive_packet end:" << ret << endl;
                 break;
             } else if (ret < 0) {
-                cout << "avcodec_receive_packet fail:" << ret << endl;
+                cout << "Audio avcodec_receive_packet fail:" << ret << endl;
                 av_packet_free(&outPacket);
                 return;
             } else {
-//                AVRational time_base = encodeContext->time_base;
-//                double td = av_q2d(time_base);
-//                //Duration between 2 frames (us)
-//                int64_t calc_duration = (double)AV_TIME_BASE / encodeContext->sample_rate;
-//                outPacket->pts = (double)(frame_index * calc_duration) / (double) (td * AV_TIME_BASE);
-//                outPacket->dts = outPacket->pts;
-//                outPacket->duration = (double) calc_duration / (double) (td * AV_TIME_BASE);
-                
-                cout<<"write audio data size = "<<outPacket->size<<", pts = "<<outPacket->pts<<endl;
+                outPacket->pts = inFrame->pkt_pts;
+                outPacket->dts = inFrame->pkt_dts;
+                outPacket->duration = inFrame->pkt_duration;
+                outPacket->stream_index = audioStream->index;
+                cout<<"Audio write data size = "<<outPacket->size<<", pts = "<<outPacket->pts<<", stream_index = "<<outPacket->stream_index<<endl;
                 ret = av_interleaved_write_frame(outFmt, outPacket);
                 frame_index++;
                 if (ret < 0) {
                     char errbuf[100];
                     av_strerror(ret, errbuf, sizeof(errbuf));
-                    cout << "av_write_frame fail:" << errbuf << endl;
+                    cout << "Audio av_write_frame fail:" << errbuf << endl;
                     av_packet_free(&outPacket);
                     return;
                 } else {
-                    cout << "av_write_frame success:" << ret << endl;
+                    cout << "Audio av_write_frame success:" << ret << endl;
                 }
             }
         }
@@ -722,13 +721,9 @@ void MediaManager::encodeToH264(AVCodecContext *codecContext, AVFormatContext* o
     if (codecContext == NULL)
         return;
     
-    AVRational timeBase = codecContext->time_base;
-    double pts = frame->pts;
-    double dts =frame->pkt_dts;
-    
     int ret = avcodec_send_frame(codecContext, frame);
     if (ret < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Encode send frame error when encode \n");
+        av_log(NULL, AV_LOG_ERROR, "Video Encode send frame error when encode \n");
         exit(1);
     }
     
@@ -737,17 +732,19 @@ void MediaManager::encodeToH264(AVCodecContext *codecContext, AVFormatContext* o
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
             return;
         else if (ret < 0) {
-            fprintf(stderr, "Error encoding audio frame\n");
+            fprintf(stderr, "Video Error encoding frame\n");
             exit(1);
         }
-        av_log(NULL, AV_LOG_INFO, "Encode receive Video packet size is %d \n", avPacket->size);
+        //这里设置stream index很关键，否则解码端会有问题
+        avPacket->stream_index = videoStream->index;
+        cout<<"Video Encode receive packet size =" << avPacket->size<<", stream_index = "<<avPacket->stream_index<<endl;
         ret = av_interleaved_write_frame(outFmtContext, avPacket);
         //        ret = av_write_frame(outFmtContext, avPacket);
         if (ret < 0) {
-            cout << "av_write_frame fail:" << ret << endl;
+            cout << "Video av_write_frame fail:" << ret << endl;
             return;
         } else {
-            cout << "av_write_frame success:" << ret << endl;
+            cout << "Video av_write_frame success:" << ret << endl;
         }
     }
     
@@ -804,6 +801,7 @@ int MediaManager::openH264Encoder(AVCodecContext **codecContext, int width, int 
     }
     
     (*codecContext)->pix_fmt = AV_PIX_FMT_YUV420P;
+    (*codecContext)->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     //分辨率
     (*codecContext)->width = width;
     (*codecContext)->height = height;
@@ -821,12 +819,15 @@ int MediaManager::openH264Encoder(AVCodecContext **codecContext, int width, int 
     (*codecContext)->refs = 3;
     //SPS/PPS
     (*codecContext)->profile = FF_PROFILE_H264_HIGH_444;
-    
     (*codecContext)->level = 50;
     
     //设置编码速度，越慢质量越好
-    if (codec->id == AV_CODEC_ID_H264)
-        av_opt_set((*codecContext)->priv_data, "preset", "slow", 0);
+    if (codec->id == AV_CODEC_ID_H264) {
+        av_opt_set((*codecContext)->priv_data, "preset", "superfast", 0);
+        av_opt_set((*codecContext)->priv_data, "tune", "zerolatency", 0);
+//        av_opt_set((*codecContext)->priv_data, "preset", "slow", 0);
+    }
+        
     
     if(avcodec_open2(*codecContext, codec, NULL) < 0) {
         av_log(NULL, AV_LOG_ERROR, "Open x264 encoder error \n");

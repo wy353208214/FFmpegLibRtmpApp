@@ -40,6 +40,8 @@ private:
     SwrContext* swrContext;
     SwsContext* swsContext;
     
+    AVStream* videoStream;
+    AVStream* audioStream;
     
     void recordAudioTask();
     void recordVideoTask();
