@@ -9,7 +9,16 @@
          contextName = "MainController.collectionView(_:itemForRepresentedObjectAt:):MainController.swift">
       </ContextState>
       <ContextState
+         contextName = "MediaManager::encodeToAAC(AVCodecContext*, AVFormatContext*, AVAudioFifo*, AVFrame*):test.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "MediaManager::encodeToH264(AVCodecContext*, AVFormatContext*, AVFrame*, AVPacket*):test.cpp">
+      </ContextState>
+      <ContextState
          contextName = "Test::encodeFrame(AVCodecContext*, AVFrame*, AVPacket*):test.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "MediaManager::recordVideoTask():test.cpp">
       </ContextState>
       <ContextState
          contextName = "Test::saveFrameYuv420p(AVFrame*, __sFILE*):test.cpp">
