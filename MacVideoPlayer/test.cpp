@@ -214,13 +214,13 @@ void MediaManager::recordVideoTask(){
             //            saveFrameYuv420p(outFrame, file);
             //            fflush(file);
             
-            encodeToH264(h264EncodeCtx, h264OutFmt ,outFrame, h264Packt);
+            encodeToH264(h264EncodeCtx, h264OutFmt ,outFrame);
             av_packet_unref(h264Packt);
         }
         av_packet_unref(inPacket);
     }
     //将缓存区的数据全部输出
-    encodeToH264(h264EncodeCtx, h264OutFmt ,outFrame, h264Packt);
+    encodeToH264(h264EncodeCtx, h264OutFmt, outFrame);
     
     avformat_close_input(&inFmt);
     avio_close(h264OutFmt->pb);
@@ -561,7 +561,7 @@ void MediaManager::pushStream() {
     
     //开始解码读取数据
     AVPacket* inPacket = av_packet_alloc();
-    AVPacket* outPacket = av_packet_alloc();
+//    AVPacket* outPacket = av_packet_alloc();
     AVFrame* audioFrame = av_frame_alloc();
     AVFrame* videoFrame = av_frame_alloc();
     long long startTime = av_gettime();
@@ -628,18 +628,13 @@ void MediaManager::pushStream() {
                     double frame_pts = av_q2d(h264EnCodecContext->time_base);
                     int64_t pts = frame_pts * 1000 * numFrame++;
                     swsOutFrame->pts = pts;
-                    outPacket->pts = pts;
-                    outPacket->dts = pts;
-                    outPacket->stream_index = videoStream->index;
-                    encodeToH264(h264EnCodecContext, rtmpOutFmt, swsOutFrame, outPacket);
-                    av_packet_unref(outPacket);
+                    encodeToH264(h264EnCodecContext, rtmpOutFmt, swsOutFrame);
                 }
         }
         
     }
     av_write_trailer(rtmpOutFmt);
     av_packet_free(&inPacket);
-    av_packet_free(&outPacket);
     av_frame_free(&videoFrame);
     av_frame_free(&audioFrame);
     
@@ -647,8 +642,6 @@ void MediaManager::pushStream() {
     
 }
 
-
-int frame_index = 0;
 void MediaManager::encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* outFmt, AVAudioFifo* fifo, AVFrame* inFrame){
     
     AVFrame *outFrame = av_frame_alloc();
@@ -692,7 +685,7 @@ void MediaManager::encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* o
             } else if (ret < 0) {
                 cout << "Audio avcodec_receive_packet fail:" << ret << endl;
                 av_packet_free(&outPacket);
-                return;
+                exit(1);
             } else {
                 outPacket->pts = inFrame->pkt_pts;
                 outPacket->dts = inFrame->pkt_dts;
@@ -700,7 +693,7 @@ void MediaManager::encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* o
                 outPacket->stream_index = audioStream->index;
                 cout<<"Audio write data size = "<<outPacket->size<<", pts = "<<outPacket->pts<<", stream_index = "<<outPacket->stream_index<<endl;
                 ret = av_interleaved_write_frame(outFmt, outPacket);
-                frame_index++;
+                
                 if (ret < 0) {
                     char errbuf[100];
                     av_strerror(ret, errbuf, sizeof(errbuf));
@@ -717,37 +710,41 @@ void MediaManager::encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* o
 }
 
 
-void MediaManager::encodeToH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *frame, AVPacket *avPacket) {
+void MediaManager::encodeToH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *inFrame) {
     if (codecContext == NULL)
         return;
     
-    int ret = avcodec_send_frame(codecContext, frame);
+    int ret = avcodec_send_frame(codecContext, inFrame);
     if (ret < 0) {
         av_log(NULL, AV_LOG_ERROR, "Video Encode send frame error when encode \n");
         exit(1);
     }
-    
+    AVPacket *outPacket = av_packet_alloc();
     while (true) {
-        ret = avcodec_receive_packet(codecContext, avPacket);
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
-            return;
-        else if (ret < 0) {
+        ret = avcodec_receive_packet(codecContext, outPacket);
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF){
+            cout << "Video avcodec_receive_packet end:" << ret << endl;
+            break;
+        } else if (ret < 0) {
             fprintf(stderr, "Video Error encoding frame\n");
+            av_packet_free(&outPacket);
             exit(1);
         }
         //这里设置stream index很关键，否则解码端会有问题
-        avPacket->stream_index = videoStream->index;
-        cout<<"Video Encode receive packet size =" << avPacket->size<<", stream_index = "<<avPacket->stream_index<<endl;
-        ret = av_interleaved_write_frame(outFmtContext, avPacket);
+        outPacket->pts = inFrame->pts;
+        outPacket->dts = inFrame->pts;
+        outPacket->stream_index = videoStream->index;
+        cout<<"Video Encode receive packet size =" << outPacket->size<<", stream_index = "<<outPacket->stream_index<<endl;
+        ret = av_interleaved_write_frame(outFmtContext, outPacket);
         //        ret = av_write_frame(outFmtContext, avPacket);
         if (ret < 0) {
             cout << "Video av_write_frame fail:" << ret << endl;
-            return;
+            break;
         } else {
             cout << "Video av_write_frame success:" << ret << endl;
         }
     }
-    
+    av_packet_free(&outPacket);
 }
 
 

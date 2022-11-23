@@ -43,6 +43,9 @@ private:
     AVStream* videoStream;
     AVStream* audioStream;
     
+    int audioFrameNum = 0;
+    int videoFrameNum = 0;
+    
     void recordAudioTask();
     void recordVideoTask();
     
@@ -78,7 +81,7 @@ private:
      @param frame 编码前的frame数据
      @param avPacket 编码后packet数据
      */
-    void encodeToH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *frame, AVPacket *avPacket);
+    void encodeToH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *frame);
     
     
     /**
