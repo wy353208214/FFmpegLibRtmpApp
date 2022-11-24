@@ -578,7 +578,7 @@ void MediaManager::pushStream() {
             break;
         }
         
-        // 音频mp3转aac
+        // 音频mp3转aac，这里未做优化处理，如果原本就是aac无需转换
         if (inPacket->stream_index == audioIndex) {
             ret = avcodec_send_packet(audioDecodeCtx, inPacket);
             while (true) {
@@ -595,13 +595,14 @@ void MediaManager::pushStream() {
                 swrOutFrame->pkt_dts = audioFrame->pkt_dts;
                 swrOutFrame->pkt_pts = audioFrame->pkt_pts;
                 swrOutFrame->pkt_duration = audioFrame->pkt_duration;
+                
                 //开始将frame编码为aac
                 encodeToAAC(aacEnCodecContext, rtmpOutFmt, fifo, swrOutFrame);
                 av_packet_unref(inPacket);
             }
 
         }
-        // 视频flv转h264
+        // 视频flv转h264，这里未做优化处理，如果原本就是h264无需转换
         else if(inPacket->stream_index == videoIndex) {
                 ret = avcodec_send_packet(videoDecodeCtx, inPacket);
                 while (true) {
