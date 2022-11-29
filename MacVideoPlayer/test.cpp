@@ -478,6 +478,8 @@ void MediaManager::pushStream() {
     }
     avformat_find_stream_info(inFmt, NULL);
     
+    av_dump_format(inFmt, 0, input_url, 0);
+    
     //查找音频信息，并打开音频解码器
     int audioIndex = av_find_best_stream(inFmt, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
     audioDecodeCtx = openDecoder(inFmt, audioIndex);
@@ -634,12 +636,33 @@ void MediaManager::pushStream() {
         }
         
     }
+    
+    encodeToAAC(aacEnCodecContext, rtmpOutFmt, fifo, swrOutFrame);
+    encodeToH264(h264EnCodecContext, rtmpOutFmt, swsOutFrame);
+    
     av_write_trailer(rtmpOutFmt);
     av_packet_free(&inPacket);
     av_frame_free(&videoFrame);
     av_frame_free(&audioFrame);
+    av_frame_free(&swsOutFrame);
+    av_frame_free(&swrOutFrame);
     
-    cout<<"转换结束"<<endl;
+    avcodec_close(videoDecodeCtx);
+    avcodec_close(audioDecodeCtx);
+    avcodec_close(h264EnCodecContext);
+    avcodec_close(aacEnCodecContext);
+    
+    avio_close(rtmpOutFmt->pb);
+    avformat_free_context(rtmpOutFmt);
+    avformat_close_input(&inFmt);
+    
+    sws_freeContext(swsContext);
+    swr_free(&swrContext);
+
+    av_audio_fifo_free(fifo);
+    avformat_network_deinit();
+    
+    cout<<"推流结束"<<endl;
     
 }
 
@@ -714,7 +737,7 @@ void MediaManager::encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* o
 void MediaManager::encodeToH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *inFrame) {
     if (codecContext == NULL)
         return;
-    
+
     int ret = avcodec_send_frame(codecContext, inFrame);
     if (ret < 0) {
         av_log(NULL, AV_LOG_ERROR, "Video Encode send frame error when encode \n");
@@ -847,4 +870,8 @@ AVCodecContext* MediaManager::openDecoder(AVFormatContext *fmtContext, int index
         return NULL;
     }
     return decodeCtx;
+}
+
+void MediaManager::play(const char* url) {
+    
 }

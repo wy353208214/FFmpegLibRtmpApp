@@ -22,7 +22,7 @@ typedef NS_ENUM(NSInteger, ORecordType) {
 - (void) convertPcm2AAC;
 - (void) openFile: (NSString*) url;
 - (void) pushStream;
-
+- (void) play: (NSString*) url;
 
 @end
 

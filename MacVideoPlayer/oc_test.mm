@@ -52,12 +52,17 @@ MediaManager *myTest;
 
 
 - (void) openFile: (NSString*) url {
-    const char *ul = [url UTF8String];
-    myTest->openFile(ul);
+    const char *url_ = [url UTF8String];
+    myTest->openFile(url_);
 }
 
 - (void) pushStream {
     myTest->pushStream();
+}
+
+- (void) play: (NSString*) url {
+    const char *url_ = [url UTF8String];
+    myTest->play(url_);
 }
 
 @end

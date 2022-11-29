@@ -33,6 +33,10 @@ public:
     void convertPcm2AAC();
     void openFile(const char* url);
     void pushStream();
+    
+    /// 播放音视频文件
+    /// @param url 文件路径或者流媒体地址
+    void play(const char *url);
 
     
 private:
@@ -65,6 +69,11 @@ private:
      */
     AVFrame* createYUV420Frame(int width, int height);
     
+    
+    /// 打开解码器
+    /// @param fmtContext 输入的format
+    /// @param index 音频或视频的index
+    /// @return 返回解码器上下文context
     AVCodecContext* openDecoder(AVFormatContext *fmtContext, int index);
     
     /**
@@ -84,9 +93,12 @@ private:
     void encodeToH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *frame);
     
     
-    /**
-     编码AAC
-     */
+    
+    /// AAC编码
+    /// @param encodeContext 编码器
+    /// @param encodeFmt 输出fmt
+    /// @param fifo 音频fifo队列
+    /// @param inFrame 解码后的原始数据AVFrame
     void encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* encodeFmt, AVAudioFifo* fifo, AVFrame* inFrame);
     
     /**
@@ -111,6 +123,9 @@ private:
         swr_alloc_set_opts(swr_Context, out_ch_layout, out_sample_fmt, out_sample_rate, in_ch_layout, in_sample_fmt, in_sample_rate, 1, NULL);
         return swr_Context;
     }
+    
+
+    
 };
 
 
