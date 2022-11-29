@@ -632,6 +632,7 @@ void MediaManager::pushStream() {
                     int64_t pts = frame_pts * 1000 * numFrame++;
                     swsOutFrame->pts = pts;
                     encodeToH264(h264EnCodecContext, rtmpOutFmt, swsOutFrame);
+                    av_packet_unref(inPacket);
                 }
         }
         
@@ -730,6 +731,7 @@ void MediaManager::encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* o
             }
         }
     }
+    av_frame_free(&outFrame);
     av_packet_free(&outPacket);
 }
 
