@@ -144,7 +144,7 @@ void MediaManager::recordVideoTask(){
     
     
     //打开编码器
-    openH264Encoder(&h264EncodeCtx, width, height);
+    openH264Encoder(&h264EncodeCtx, width, height, false);
     
     //打开输出avformatContext
     h264OutFmt = avformat_alloc_context();
@@ -493,7 +493,7 @@ void MediaManager::pushStream() {
         return;
     }
     //打开h264编码器
-    if(openH264Encoder(&h264EnCodecContext, videoDecodeCtx->width, videoDecodeCtx->height) < 0)
+    if(openH264Encoder(&h264EnCodecContext, videoDecodeCtx->width, videoDecodeCtx->height, true) < 0)
         return;
     
     
@@ -808,7 +808,7 @@ AVCodecContext* MediaManager::openAACEncoder() {
 }
 
 
-int MediaManager::openH264Encoder(AVCodecContext **codecContext, int width, int height) {
+int MediaManager::openH264Encoder(AVCodecContext **codecContext, int width, int height, bool isLiveStream) {
     AVCodec *codec = avcodec_find_encoder_by_name("libx264");
     if(codec == NULL) {
         av_log(NULL, AV_LOG_ERROR, "Not found codec \n");
@@ -821,9 +821,12 @@ int MediaManager::openH264Encoder(AVCodecContext **codecContext, int width, int 
         return -1;
     }
     
+    //实时流则需要设置AV_CODEC_FLAG_GLOBAL_HEADER，这样不用每帧数据都设置sps/pps，否则无法播放端无法解码播放
+    //本地文件如mp4\h264，则不能设置AV_CODEC_FLAG_GLOBAL_HEADER，这样保证本地文件每帧数据都有sps/pps，因为本地文件可以随意拖动播放
+    if (isLiveStream)
+        (*codecContext)->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    
     (*codecContext)->pix_fmt = AV_PIX_FMT_YUV420P;
-    //这里注意如果是录制保存到本地h264，不要设置flags，暂时还未搞清楚原因，如果是推流就设置
-    (*codecContext)->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     //分辨率
     (*codecContext)->width = width;
     (*codecContext)->height = height;
