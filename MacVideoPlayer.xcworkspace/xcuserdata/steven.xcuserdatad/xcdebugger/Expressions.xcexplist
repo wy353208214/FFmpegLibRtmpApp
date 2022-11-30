@@ -9,16 +9,23 @@
          contextName = "MainController.collectionView(_:itemForRepresentedObjectAt:):MainController.swift">
       </ContextState>
       <ContextState
-         contextName = "MediaManager::encodeToAAC(AVCodecContext*, AVFormatContext*, AVAudioFifo*, AVFrame*):test.cpp">
-      </ContextState>
-      <ContextState
-         contextName = "MediaManager::encodeToH264(AVCodecContext*, AVFormatContext*, AVFrame*, AVPacket*):test.cpp">
+         contextName = "Test::encodeFrame(AVCodecContext*, AVFrame*, AVPacket*, __sFILE*):test.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "avPacket-&gt;data[10]">
+            </PersistentString>
+         </PersistentStrings>
       </ContextState>
       <ContextState
          contextName = "Test::encodeFrame(AVCodecContext*, AVFrame*, AVPacket*):test.cpp">
       </ContextState>
       <ContextState
-         contextName = "MediaManager::recordVideoTask():test.cpp">
+         contextName = "MediaManager::encodeToH264(AVCodecContext*, AVFormatContext*, AVFrame*, AVStream*):test.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "outPacket-&gt;data[300]">
+            </PersistentString>
+         </PersistentStrings>
       </ContextState>
       <ContextState
          contextName = "Test::saveFrameYuv420p(AVFrame*, __sFILE*):test.cpp">
@@ -49,21 +56,22 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
+         contextName = "MediaManager::pushStream():test.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "MediaManager::openAACEncoder():test.cpp">
+      </ContextState>
+      <ContextState
          contextName = "Test::recordMedia():test.cpp">
       </ContextState>
       <ContextState
          contextName = "Publisher::readData(char*):publisher.cpp">
       </ContextState>
       <ContextState
-         contextName = "Test::openFile(char const*):test.cpp">
+         contextName = "MediaManager::encodeToAAC(AVCodecContext*, AVFormatContext*, AVAudioFifo*, AVFrame*):test.cpp">
       </ContextState>
       <ContextState
-         contextName = "Test::encodeFrame(AVCodecContext*, AVFrame*, AVPacket*, __sFILE*):test.cpp">
-         <PersistentStrings>
-            <PersistentString
-               value = "avPacket-&gt;data[10]">
-            </PersistentString>
-         </PersistentStrings>
+         contextName = "Test::openFile(char const*):test.cpp">
       </ContextState>
    </ContextStates>
 </VariablesViewState>
