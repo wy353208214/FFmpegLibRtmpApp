@@ -92,7 +92,7 @@ private:
      */
     void encodeToH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *frame, AVStream* stream);
     
-    
+    void saveH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *frame, AVPacket *avPacket);
     
     /// AAC编码
     /// @param encodeContext 编码器

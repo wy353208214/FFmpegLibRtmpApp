@@ -822,6 +822,7 @@ int MediaManager::openH264Encoder(AVCodecContext **codecContext, int width, int 
     }
     
     (*codecContext)->pix_fmt = AV_PIX_FMT_YUV420P;
+    //这里注意如果是录制保存到本地h264，不要设置flags，暂时还未搞清楚原因，如果是推流就设置
     (*codecContext)->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     //分辨率
     (*codecContext)->width = width;
