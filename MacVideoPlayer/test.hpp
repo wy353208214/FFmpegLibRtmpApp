@@ -90,7 +90,7 @@ private:
      @param frame 编码前的frame数据
      @param avPacket 编码后packet数据
      */
-    void encodeToH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *frame);
+    void encodeToH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *frame, AVStream* stream);
     
     
     
@@ -99,7 +99,7 @@ private:
     /// @param encodeFmt 输出fmt
     /// @param fifo 音频fifo队列
     /// @param inFrame 解码后的原始数据AVFrame
-    void encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* encodeFmt, AVAudioFifo* fifo, AVFrame* inFrame);
+    void encodeToAAC(AVCodecContext* encodeContext, AVFormatContext* encodeFmt, AVAudioFifo* fifo, AVFrame* inFrame, AVStream* stream);
     
     /**
      打开AAC编码器
