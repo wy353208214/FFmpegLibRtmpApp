@@ -144,7 +144,10 @@ void MediaManager::recordVideoTask(){
     
     
     //打开编码器
-    openH264Encoder(&h264EncodeCtx, width, height, false);
+    h264EncodeCtx = openH264Encoder(width, height, false);
+    if (h264EncodeCtx == NULL) {
+        return;
+    }
     
     //打开输出avformatContext
     h264OutFmt = avformat_alloc_context();
@@ -456,8 +459,8 @@ void MediaManager::convertPcm2AAC(){
 
 int64_t cur_pts = 0;
 void MediaManager::pushStream() {
-//    char *input_url =  "/Users/steven/Movies/Video/S8.flv";
-    char *input_url =  "/Users/steven/Desktop/out.flv";
+    char *input_url =  "/Users/steven/Movies/Video/S8.flv";
+//    char *input_url =  "/Users/steven/Desktop/out.flv";
     char* rtmp_url = "rtmp://localhost:1935/hls/test";
     
     avformat_network_init();
@@ -466,8 +469,8 @@ void MediaManager::pushStream() {
     
     AVCodecContext* audioDecodeCtx; //音频解码器
     AVCodecContext* videoDecodeCtx; //视频解码器
-    AVCodecContext* h264EnCodecContext; //h264编码器
-    AVCodecContext* aacEnCodecContext; //aac编码器
+    AVCodecContext* h264EnCodecContext = NULL; //h264编码器
+    AVCodecContext* aacEnCodecContext = NULL; //aac编码器
     
     
     //打开输入文件，解码音频
@@ -477,7 +480,6 @@ void MediaManager::pushStream() {
         return;
     }
     avformat_find_stream_info(inFmt, NULL);
-    
     av_dump_format(inFmt, 0, input_url, 0);
     
     //查找音频信息，并打开音频解码器
@@ -487,16 +489,6 @@ void MediaManager::pushStream() {
     int videoIndex = av_find_best_stream(inFmt, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
     videoDecodeCtx = openDecoder(inFmt, videoIndex);
     
-    //打开AAC编码器
-    aacEnCodecContext = openAACEncoder();
-    if (aacEnCodecContext == NULL) {
-        return;
-    }
-    //打开h264编码器
-    if(openH264Encoder(&h264EnCodecContext, videoDecodeCtx->width, videoDecodeCtx->height, true) < 0)
-        return;
-    
-    
     //初始化rtmp输出上下文
     ret = avformat_alloc_output_context2(&rtmpOutFmt, NULL, "flv", rtmp_url);
     if (ret < 0) {
@@ -504,22 +496,59 @@ void MediaManager::pushStream() {
         return;
     }
     
-    //aac编码流
-    audioStream = avformat_new_stream(rtmpOutFmt, aacEnCodecContext->codec);
-    audioStream->codecpar->codec_tag = 0;
-    audioStream->time_base = aacEnCodecContext->time_base;
-    avcodec_parameters_from_context(audioStream->codecpar, aacEnCodecContext);
-    if (rtmpOutFmt->oformat->flags & AVFMT_GLOBALHEADER)
-        aacEnCodecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    //打开AAC编码器
+    aacEnCodecContext = openAACEncoder();
+    if (aacEnCodecContext == NULL) {
+        return;
+    }
+    //打开h264编码器
+    h264EnCodecContext = openH264Encoder(videoDecodeCtx->width, videoDecodeCtx->height, true);
+    if(h264EnCodecContext == NULL)
+        return;
     
-    // h264编码流
-    videoStream = avformat_new_stream(rtmpOutFmt, h264EnCodecContext->codec);
-    videoStream->codecpar->codec_tag = 0;
-    videoStream->time_base = h264EnCodecContext->time_base;
-    avcodec_parameters_from_context(videoStream->codecpar, h264EnCodecContext);
-    if (rtmpOutFmt->oformat->flags & AVFMT_GLOBALHEADER)
-        h264EnCodecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-    
+    //这里设置输出Stream，这里因为要求推流的音频aac\视频h264（服务端需要支持hls\dash协议），当然不要求也可以，可以直接推流
+    for (int i = 0; i < inFmt->nb_streams; i++) {
+        AVStream* inStream = inFmt->streams[i];
+        AVCodecParameters* inCodePar = inStream->codecpar;
+        const AVCodec* inCodec = avcodec_find_decoder(inCodePar->codec_id);
+        
+        switch (inCodePar->codec_type) {
+            case AVMEDIA_TYPE_AUDIO:
+                if (audioDecodeCtx->codec_id == AV_CODEC_ID_AAC){
+                    audioStream = avformat_new_stream(rtmpOutFmt, inCodec);
+                    avcodec_parameters_copy(audioStream->codecpar, inCodePar);
+                }else {
+                    //aac编码流
+                    audioStream = avformat_new_stream(rtmpOutFmt, aacEnCodecContext->codec);
+                    audioStream->codecpar->codec_tag = 0;
+                    audioStream->time_base = aacEnCodecContext->time_base;
+                    avcodec_parameters_from_context(audioStream->codecpar, aacEnCodecContext);
+                    if (rtmpOutFmt->oformat->flags & AVFMT_GLOBALHEADER)
+                        aacEnCodecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+                }
+                break;
+                
+            case AVMEDIA_TYPE_VIDEO:
+                if (videoDecodeCtx->codec_id == AV_CODEC_ID_H264){
+                    videoStream = avformat_new_stream(rtmpOutFmt, inCodec);
+                    avcodec_parameters_copy(videoStream->codecpar, inCodePar);
+                }else {
+                    // h264编码流
+                    videoStream = avformat_new_stream(rtmpOutFmt, h264EnCodecContext->codec);
+                    videoStream->codecpar->codec_tag = 0;
+                    videoStream->time_base = h264EnCodecContext->time_base;
+                    avcodec_parameters_from_context(videoStream->codecpar, h264EnCodecContext);
+                    if (rtmpOutFmt->oformat->flags & AVFMT_GLOBALHEADER)
+                        h264EnCodecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+                }
+                break;
+                
+            default:
+                AVStream* outStream = avformat_new_stream(rtmpOutFmt, inCodec);
+                avcodec_parameters_copy(outStream->codecpar, inCodePar);
+                break;
+        }
+    }
     
 
     av_dump_format(rtmpOutFmt, 0, rtmp_url, 1);
@@ -536,7 +565,7 @@ void MediaManager::pushStream() {
         return;
     }
     
-    
+
     //初始化缓冲区AVAudioFifo，由于mp3是1153个采样点，aac是1024个采样点，所以需要用到avaudiofifo缓冲器。
     AVAudioFifo* fifo = av_audio_fifo_alloc(aacEnCodecContext->sample_fmt, aacEnCodecContext->channels, aacEnCodecContext->frame_size);
     //初始化音频重采样转换器
@@ -563,7 +592,6 @@ void MediaManager::pushStream() {
     
     //开始解码读取数据
     AVPacket* inPacket = av_packet_alloc();
-//    AVPacket* outPacket = av_packet_alloc();
     AVFrame* audioFrame = av_frame_alloc();
     AVFrame* videoFrame = av_frame_alloc();
     long long startTime = av_gettime();
@@ -582,6 +610,19 @@ void MediaManager::pushStream() {
         
         // 音频mp3转aac，这里未做优化处理，如果原本就是aac无需转换
         if (inPacket->stream_index == audioIndex) {
+            
+            if(audioDecodeCtx->codec_id == AV_CODEC_ID_AAC){
+                AVRational inTimeBase = inFmt->streams[inPacket->stream_index]->time_base;
+                AVRational outTimeBase = rtmpOutFmt->streams[inPacket->stream_index]->time_base;
+                inPacket->pts = av_rescale_q_rnd(inPacket->pts, inTimeBase, outTimeBase, (AVRounding)(AV_ROUND_NEAR_INF | AV_ROUND_NEAR_INF));
+                inPacket->dts = av_rescale_q_rnd(inPacket->dts, inTimeBase, outTimeBase, (AVRounding)(AV_ROUND_NEAR_INF | AV_ROUND_NEAR_INF));
+                inPacket->duration = av_rescale_q_rnd(inPacket->duration, inTimeBase, outTimeBase, (AVRounding)(AV_ROUND_NEAR_INF | AV_ROUND_NEAR_INF));
+                inPacket->pos = -1;
+                ret = av_interleaved_write_frame(rtmpOutFmt, inPacket);
+                
+                continue;
+            }
+            
             ret = avcodec_send_packet(audioDecodeCtx, inPacket);
             while (true) {
                 ret = avcodec_receive_frame(audioDecodeCtx, audioFrame);
@@ -593,6 +634,7 @@ void MediaManager::pushStream() {
                 }
                 //先转换指定格式
                 swr_convert_frame(swrContext, swrOutFrame, audioFrame);
+                
                 swrOutFrame->pts = audioFrame->pts;
                 swrOutFrame->pkt_dts = audioFrame->pkt_dts;
                 swrOutFrame->pkt_pts = audioFrame->pkt_pts;
@@ -602,8 +644,30 @@ void MediaManager::pushStream() {
                 encodeToAAC(aacEnCodecContext, rtmpOutFmt, fifo, swrOutFrame, audioStream);
             }
         }
+        
         // 视频flv转h264，这里未做优化处理，如果原本就是h264无需转换
         else if(inPacket->stream_index == videoIndex) {
+            
+            if (videoDecodeCtx->codec_id == AV_CODEC_ID_H264) {
+                AVRational inTimeBase = inFmt->streams[inPacket->stream_index]->time_base;
+                AVRational outTimeBase = rtmpOutFmt->streams[inPacket->stream_index]->time_base;
+                inPacket->pts = av_rescale_q_rnd(inPacket->pts, inTimeBase, outTimeBase, (AVRounding)(AV_ROUND_NEAR_INF | AV_ROUND_NEAR_INF));
+                inPacket->dts = av_rescale_q_rnd(inPacket->dts, inTimeBase, outTimeBase, (AVRounding)(AV_ROUND_NEAR_INF | AV_ROUND_NEAR_INF));
+                inPacket->duration = av_rescale_q_rnd(inPacket->duration, inTimeBase, outTimeBase, (AVRounding)(AV_ROUND_NEAR_INF | AV_ROUND_NEAR_INF));
+                inPacket->pos = -1;
+                
+                AVRational tb = videoStream->time_base;
+                int64_t dts = av_rescale_q(inPacket->dts, tb, av_get_time_base_q());
+                //已经过去的时间
+                int64_t now = av_gettime() - startTime;
+                if (dts > now) {
+                    cout<<"休息会"<<endl;
+                    av_usleep((int)(dts - now));
+                }
+                ret = av_interleaved_write_frame(rtmpOutFmt, inPacket);
+                continue;
+            }
+            
                 ret = avcodec_send_packet(videoDecodeCtx, inPacket);
                 while (true) {
                     ret = avcodec_receive_frame(videoDecodeCtx, videoFrame);
@@ -633,7 +697,6 @@ void MediaManager::pushStream() {
                 }
         }
         av_packet_unref(inPacket);
-        
     }
     
     encodeToAAC(aacEnCodecContext, rtmpOutFmt, fifo, swrOutFrame, audioStream);
@@ -808,57 +871,57 @@ AVCodecContext* MediaManager::openAACEncoder() {
 }
 
 
-int MediaManager::openH264Encoder(AVCodecContext **codecContext, int width, int height, bool isLiveStream) {
+AVCodecContext* MediaManager::openH264Encoder(int width, int height, bool isLiveStream) {
     AVCodec *codec = avcodec_find_encoder_by_name("libx264");
     if(codec == NULL) {
         av_log(NULL, AV_LOG_ERROR, "Not found codec \n");
-        return -1;
+        return NULL;
     }
     
-    *codecContext = avcodec_alloc_context3(codec);
+    AVCodecContext *codecContext = avcodec_alloc_context3(codec);
     if(codecContext == NULL) {
         av_log(NULL, AV_LOG_ERROR, "Not found AVCodecContext \n");
-        return -1;
+        return NULL;
     }
     
     //实时流则需要设置AV_CODEC_FLAG_GLOBAL_HEADER，这样不用每帧数据都设置sps/pps，否则无法播放端无法解码播放
     //本地文件如mp4\h264，则不能设置AV_CODEC_FLAG_GLOBAL_HEADER，这样保证本地文件每帧数据都有sps/pps，因为本地文件可以随意拖动播放
     if (isLiveStream)
-        (*codecContext)->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+        codecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     
-    (*codecContext)->pix_fmt = AV_PIX_FMT_YUV420P;
+    codecContext->pix_fmt = AV_PIX_FMT_YUV420P;
     //分辨率
-    (*codecContext)->width = width;
-    (*codecContext)->height = height;
+    codecContext->width = width;
+    codecContext->height = height;
     //帧率、码率
-    (*codecContext)->framerate = AVRational{25, 1};
-    (*codecContext)->time_base = AVRational{1, 25};
-    (*codecContext)->bit_rate = 600000;
+    codecContext->framerate = AVRational{25, 1};
+    codecContext->time_base = AVRational{1, 25};
+    codecContext->bit_rate = 600000;
     //GOP
-    (*codecContext)->gop_size = 10;
-    (*codecContext)->keyint_min = 5;
+    codecContext->gop_size = 10;
+    codecContext->keyint_min = 5;
     //B帧
-    (*codecContext)->max_b_frames = 3;
-    (*codecContext)->has_b_frames = 1;
+    codecContext->max_b_frames = 3;
+    codecContext->has_b_frames = 1;
     //参考帧
-    (*codecContext)->refs = 3;
+    codecContext->refs = 3;
     //SPS/PPS
-    (*codecContext)->profile = FF_PROFILE_H264_HIGH_444;
-    (*codecContext)->level = 50;
+    codecContext->profile = FF_PROFILE_H264_HIGH_444;
+    codecContext->level = 50;
     
     //设置编码速度，越慢质量越好
     if (codec->id == AV_CODEC_ID_H264) {
-        av_opt_set((*codecContext)->priv_data, "preset", "superfast", 0);
-        av_opt_set((*codecContext)->priv_data, "tune", "zerolatency", 0);
-//        av_opt_set((*codecContext)->priv_data, "preset", "slow", 0);
+        av_opt_set(codecContext->priv_data, "preset", "superfast", 0);
+        av_opt_set(codecContext->priv_data, "tune", "zerolatency", 0);
+//        av_opt_set(codecContext->priv_data, "preset", "slow", 0);
     }
         
     
-    if(avcodec_open2(*codecContext, codec, NULL) < 0) {
+    if(avcodec_open2(codecContext, codec, NULL) < 0) {
         av_log(NULL, AV_LOG_ERROR, "Open x264 encoder error \n");
-        return -1;
+        return NULL;
     }
-    return 0;
+    return codecContext;
 }
 
 

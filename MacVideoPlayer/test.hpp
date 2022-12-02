@@ -109,13 +109,12 @@ private:
     
     /**
      打开编码器
-     @param codecContext 传入的AVCodecContext上下文，打开编码器后赋值给其
      @param width 输出宽度
      @param height 输出高度
      @param isLiveStream 是否为实时流
      @return 0 成功，< 0 失败
      */
-    int openH264Encoder(AVCodecContext **codecContext, int width, int height, bool isLiveStream);
+    AVCodecContext* openH264Encoder(int width, int height, bool isLiveStream);
     
     
     SwrContext* getSwrContext(int64_t out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate,
