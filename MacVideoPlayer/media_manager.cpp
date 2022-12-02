@@ -5,7 +5,7 @@
 //  Created by steven on 2022/9/7.
 //
 
-#include "test.hpp"
+#include "media_manager.hpp"
 #include "publisher.hpp"
 #include <iostream>
 #include <thread>
@@ -459,7 +459,8 @@ void MediaManager::convertPcm2AAC(){
 
 int64_t cur_pts = 0;
 void MediaManager::pushStream() {
-    char *input_url =  "/Users/steven/Movies/Video/S8.flv";
+//    char *input_url =  "/Users/steven/Movies/Video/S8.flv";
+    char *input_url =  "/Users/steven/Movies/Video/luoxiang.flv";
 //    char *input_url =  "/Users/steven/Desktop/out.flv";
     char* rtmp_url = "rtmp://localhost:1935/hls/test";
     

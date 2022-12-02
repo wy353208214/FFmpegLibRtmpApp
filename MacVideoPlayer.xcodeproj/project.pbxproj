@@ -12,9 +12,9 @@
 		B00221C628C82B7200A48EB6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00221C528C82B7200A48EB6 /* ViewController.swift */; };
 		B00221C828C82B7D00A48EB6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B00221C728C82B7D00A48EB6 /* Assets.xcassets */; };
 		B00221CB28C82B7D00A48EB6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B00221C928C82B7D00A48EB6 /* Main.storyboard */; };
-		B002220528C88C8A00A48EB6 /* oc_test.mm in Sources */ = {isa = PBXBuildFile; fileRef = B002220428C88C8A00A48EB6 /* oc_test.mm */; };
+		B002220528C88C8A00A48EB6 /* oc_media.mm in Sources */ = {isa = PBXBuildFile; fileRef = B002220428C88C8A00A48EB6 /* oc_media.mm */; };
 		B00222FB28CB101A00A48EB6 /* audio_recorder.c in Sources */ = {isa = PBXBuildFile; fileRef = B00222FA28CB101A00A48EB6 /* audio_recorder.c */; };
-		B032C2C1292B506F00ECADD7 /* test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B00221F128C8815700A48EB6 /* test.cpp */; };
+		B032C2C1292B506F00ECADD7 /* media_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B00221F128C8815700A48EB6 /* media_manager.cpp */; };
 		B05F14FD28DAA8B000DFD64F /* libavresample.4.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14F428DAA8B000DFD64F /* libavresample.4.0.0.dylib */; };
 		B05F14FE28DAA8B000DFD64F /* libavresample.4.0.0.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B05F14F428DAA8B000DFD64F /* libavresample.4.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B05F14FF28DAA8B000DFD64F /* libavformat.58.76.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14F528DAA8B000DFD64F /* libavformat.58.76.100.dylib */; };
@@ -85,10 +85,10 @@
 		B00221CC28C82B7D00A48EB6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B00221CD28C82B7D00A48EB6 /* MacVideoPlayer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MacVideoPlayer.entitlements; sourceTree = "<group>"; };
 		B00221F028C8815600A48EB6 /* MacVideoPlayer-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MacVideoPlayer-Bridging-Header.h"; sourceTree = "<group>"; };
-		B00221F128C8815700A48EB6 /* test.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = test.cpp; sourceTree = "<group>"; wrapsLines = 0; };
-		B00221F228C8815700A48EB6 /* test.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = test.hpp; sourceTree = "<group>"; };
-		B002220328C88C8A00A48EB6 /* oc_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = oc_test.h; sourceTree = "<group>"; };
-		B002220428C88C8A00A48EB6 /* oc_test.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = oc_test.mm; sourceTree = "<group>"; };
+		B00221F128C8815700A48EB6 /* media_manager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = media_manager.cpp; sourceTree = "<group>"; wrapsLines = 0; };
+		B00221F228C8815700A48EB6 /* media_manager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = media_manager.hpp; sourceTree = "<group>"; };
+		B002220328C88C8A00A48EB6 /* oc_media.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = oc_media.h; sourceTree = "<group>"; };
+		B002220428C88C8A00A48EB6 /* oc_media.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = oc_media.mm; sourceTree = "<group>"; };
 		B00222E028C8A4AF00A48EB6 /* libavformat.58.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.58.dylib; path = libs/ffmpeg/libavformat.58.dylib; sourceTree = "<group>"; };
 		B00222E328C8A50400A48EB6 /* libavformat.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.dylib; path = libs/ffmpeg/libavformat.dylib; sourceTree = "<group>"; };
 		B00222E728C8A62200A48EB6 /* libavcodec.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.dylib; path = libs/ffmpeg/libavcodec.dylib; sourceTree = "<group>"; };
@@ -217,11 +217,11 @@
 				B00221C928C82B7D00A48EB6 /* Main.storyboard */,
 				B00221CC28C82B7D00A48EB6 /* Info.plist */,
 				B00221CD28C82B7D00A48EB6 /* MacVideoPlayer.entitlements */,
-				B00221F128C8815700A48EB6 /* test.cpp */,
-				B00221F228C8815700A48EB6 /* test.hpp */,
+				B00221F128C8815700A48EB6 /* media_manager.cpp */,
+				B00221F228C8815700A48EB6 /* media_manager.hpp */,
 				B00221F028C8815600A48EB6 /* MacVideoPlayer-Bridging-Header.h */,
-				B002220328C88C8A00A48EB6 /* oc_test.h */,
-				B002220428C88C8A00A48EB6 /* oc_test.mm */,
+				B002220328C88C8A00A48EB6 /* oc_media.h */,
+				B002220428C88C8A00A48EB6 /* oc_media.mm */,
 				B0F9824E28F541C100E46A9D /* SlidePresentAnimator.swift */,
 				B0F9825028F5494200E46A9D /* NoMousePassView.swift */,
 				B0A0A145290681AC00A491CA /* publisher.cpp */,
@@ -367,9 +367,9 @@
 				B00221C628C82B7200A48EB6 /* ViewController.swift in Sources */,
 				B0F9824D28F50F6500E46A9D /* MainController.swift in Sources */,
 				B0F9824F28F541C100E46A9D /* SlidePresentAnimator.swift in Sources */,
-				B002220528C88C8A00A48EB6 /* oc_test.mm in Sources */,
+				B002220528C88C8A00A48EB6 /* oc_media.mm in Sources */,
 				B0F9825128F5494200E46A9D /* NoMousePassView.swift in Sources */,
-				B032C2C1292B506F00ECADD7 /* test.cpp in Sources */,
+				B032C2C1292B506F00ECADD7 /* media_manager.cpp in Sources */,
 				B00222FB28CB101A00A48EB6 /* audio_recorder.c in Sources */,
 				B00221C428C82B7200A48EB6 /* AppDelegate.swift in Sources */,
 				B0F9824A28F29E9D00E46A9D /* DetailController.swift in Sources */,

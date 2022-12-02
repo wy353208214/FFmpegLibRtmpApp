@@ -5,10 +5,10 @@
 //  Created by steven on 2022/9/7.
 //
 
-#import "oc_test.h"
-#import "test.hpp"
+#import "oc_media.h"
+#import "media_manager.hpp"
 
-@implementation oc_test
+@implementation OcMediaManager
 
 MediaManager *myTest;
 

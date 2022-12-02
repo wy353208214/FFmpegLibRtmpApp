@@ -15,7 +15,7 @@ typedef NS_ENUM(NSInteger, ORecordType) {
     OC_ALL
 };
 
-@interface oc_test : NSObject
+@interface OcMediaManager : NSObject
 
 - (void) startRecord: (ORecordType) type;
 - (void) stopRecord;

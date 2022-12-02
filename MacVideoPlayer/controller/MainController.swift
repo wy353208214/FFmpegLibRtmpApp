@@ -23,7 +23,7 @@ class MainController: NSViewController{
     private var events: NSArray = [UserEvent.Record_Video, UserEvent.Record_Audio, UserEvent.Convet_AAC, UserEvent.Stop_Record, UserEvent.PUSH_STREAM]
     private var datas: NSArray = ["录制视频", "录制音频", "PCM转化AAC", "停止录制", "推流"]
     
-    private let ff = oc_test.init()
+    private let ff = OcMediaManager.init()
     
     
     override func loadView() {

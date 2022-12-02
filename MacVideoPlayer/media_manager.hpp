@@ -5,8 +5,8 @@
 //  Created by steven on 2022/9/7.
 //
 
-#ifndef test_hpp
-#define test_hpp
+#ifndef media_manage_hpp
+#define media_manage_hpp
 
 #include <stdio.h>
 
