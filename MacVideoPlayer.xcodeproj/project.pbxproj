@@ -209,6 +209,7 @@
 		B00221C228C82B7200A48EB6 /* MacVideoPlayer */ = {
 			isa = PBXGroup;
 			children = (
+				B09C4BC02939D205001B75FE /* cpp */,
 				B0F9824B28F50F3300E46A9D /* controller */,
 				B00222F828CB0FD100A48EB6 /* audio */,
 				B00221C328C82B7200A48EB6 /* AppDelegate.swift */,
@@ -217,15 +218,11 @@
 				B00221C928C82B7D00A48EB6 /* Main.storyboard */,
 				B00221CC28C82B7D00A48EB6 /* Info.plist */,
 				B00221CD28C82B7D00A48EB6 /* MacVideoPlayer.entitlements */,
-				B00221F128C8815700A48EB6 /* media_manager.cpp */,
-				B00221F228C8815700A48EB6 /* media_manager.hpp */,
 				B00221F028C8815600A48EB6 /* MacVideoPlayer-Bridging-Header.h */,
 				B002220328C88C8A00A48EB6 /* oc_media.h */,
 				B002220428C88C8A00A48EB6 /* oc_media.mm */,
 				B0F9824E28F541C100E46A9D /* SlidePresentAnimator.swift */,
 				B0F9825028F5494200E46A9D /* NoMousePassView.swift */,
-				B0A0A145290681AC00A491CA /* publisher.cpp */,
-				B0A0A146290681AC00A491CA /* publisher.hpp */,
 			);
 			path = MacVideoPlayer;
 			sourceTree = "<group>";
@@ -237,6 +234,17 @@
 				B00222FA28CB101A00A48EB6 /* audio_recorder.c */,
 			);
 			path = audio;
+			sourceTree = "<group>";
+		};
+		B09C4BC02939D205001B75FE /* cpp */ = {
+			isa = PBXGroup;
+			children = (
+				B00221F128C8815700A48EB6 /* media_manager.cpp */,
+				B00221F228C8815700A48EB6 /* media_manager.hpp */,
+				B0A0A145290681AC00A491CA /* publisher.cpp */,
+				B0A0A146290681AC00A491CA /* publisher.hpp */,
+			);
+			path = cpp;
 			sourceTree = "<group>";
 		};
 		B0F9824B28F50F3300E46A9D /* controller */ = {
