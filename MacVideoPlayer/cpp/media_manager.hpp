@@ -9,6 +9,10 @@
 #define media_manage_hpp
 
 #include <stdio.h>
+#include "SDL2/SDL_thread.h"
+#include "SDL2/SDL.h"
+#include "block_recycler_queue.h"
+
 
 extern "C" {
     #include "libavutil/frame.h"
@@ -26,6 +30,39 @@ enum RecordType {
     ALL,
 };
 
+struct MediaData {
+    AVFormatContext *inFmtCtx;
+    
+    BlockRecyclerQueue<AVPacket*> *videoPktQueue;
+    BlockRecyclerQueue<AVPacket*> *audioPktQueue;
+    
+    BlockRecyclerQueue<AVFrame*> *videoFrameQueue;
+    BlockRecyclerQueue<AVFrame*> *audioFrameQueue;
+    
+    int videoIndex;
+    int audioIndex;
+    
+    AVCodecContext *videoDecodeCtx;
+    AVCodecContext *audioDecodeCtx;
+    
+    SDL_Window *window;
+    SDL_Renderer *render;
+    SDL_Texture *texture;
+    SDL_Rect rect;
+    
+    bool quit = false;
+    SDL_mutex *mutex;
+    
+    int out_channels;
+    AVSampleFormat out_sample_fmt;
+    SwrContext *swrContext;
+    uint8_t *audio_buffer;
+    int audio_len;
+    uint8_t *audio_pos;
+    
+};
+
+
 class MediaManager{
 public:
     void startRecord(RecordType type);
@@ -40,6 +77,9 @@ public:
 
     
 private:
+    //音频缓冲区大小
+    static const size_t MAX_AUDIO_FRAME_SIZE = 192000;
+    
     bool isStop = false;
     SwrContext* swrContext;
     SwsContext* swsContext;
@@ -50,9 +90,11 @@ private:
     int audioFrameNum = 0;
     int videoFrameNum = 0;
     
+    MediaData mediaData;
+    
+    
     void recordAudioTask();
     void recordVideoTask();
-    
 
     /**
      将格式为yuv420p的avframe保存到文件中
@@ -64,7 +106,7 @@ private:
     /**
      创建一个新的AVFrame
      @param width 对应宽度
-     @param height
+     @param height 对应高度
      @return 返回一个AVFrame指针
      */
     AVFrame* createYUV420Frame(int width, int height);
@@ -124,7 +166,50 @@ private:
         return swr_Context;
     }
     
-
+    
+    /// 更新视频纹理
+    /// @param frame 解码后的原始frame数据
+    void updateTexture(AVFrame *frame);
+    
+    
+    /// 解封装Packet
+    /// @param data 解码的相关信息，封装在mediadata中
+    static int demuxePacket(void *data);
+    
+    
+    /// 解码视频
+    /// @param data 解码的相关信息，封装在mediadata中
+    static int decodeVideoPacket(void *data);
+    
+    /// 解码音频
+    /// @param data 解码的相关信息，封装在mediadata中
+    static int decodeAudioPacket(void *data);
+    
+     
+    /// SDL_Audio播放音频回调函数
+    /// @param udata 用户数据
+    /// @param stream 音频数据
+    /// @param len 要播放的音频数据长度
+    static void audioCallBack(void *udata, Uint8 *stream, int len);
+    
+    
+    /// 队列清除数据回调函数
+    /// @param pkt 待清除的packet
+    static void disCardCallBack(AVPacket *pkt);
+    
+    /// 队列清除数据回调函数
+    /// @param frame 待清除的frame
+    static void disCardCallBack(AVFrame *frame);
+    
+    
+    void scheduleVideoRefresh(MediaData *md, int delay);
+    
+    
+    static Uint32 sdlRefeshCallBack(Uint32 interval, void *udata);
+    
+    
+    void videoRefreshTimer(void* udata);
+    
     
 };
 

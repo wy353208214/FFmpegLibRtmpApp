@@ -14,6 +14,8 @@
 		B00221CB28C82B7D00A48EB6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B00221C928C82B7D00A48EB6 /* Main.storyboard */; };
 		B002220528C88C8A00A48EB6 /* oc_media.mm in Sources */ = {isa = PBXBuildFile; fileRef = B002220428C88C8A00A48EB6 /* oc_media.mm */; };
 		B00222FB28CB101A00A48EB6 /* audio_recorder.c in Sources */ = {isa = PBXBuildFile; fileRef = B00222FA28CB101A00A48EB6 /* audio_recorder.c */; };
+		B01254472940718200E8507F /* libSDL2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B01254462940718200E8507F /* libSDL2.dylib */; };
+		B01254482940718200E8507F /* libSDL2.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B01254462940718200E8507F /* libSDL2.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B032C2C1292B506F00ECADD7 /* media_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B00221F128C8815700A48EB6 /* media_manager.cpp */; };
 		B05F14FD28DAA8B000DFD64F /* libavresample.4.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B05F14F428DAA8B000DFD64F /* libavresample.4.0.0.dylib */; };
 		B05F14FE28DAA8B000DFD64F /* libavresample.4.0.0.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B05F14F428DAA8B000DFD64F /* libavresample.4.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -42,6 +44,7 @@
 		B0A0A14329067C1A00A491CA /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A0A14229067C1A00A491CA /* libcrypto.dylib */; };
 		B0A0A14429067C1B00A491CA /* libcrypto.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B0A0A14229067C1A00A491CA /* libcrypto.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B0A0A147290681AC00A491CA /* publisher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A0A145290681AC00A491CA /* publisher.cpp */; };
+		B0BE528C2941CFB30003B292 /* block_recycler_queue.h in Sources */ = {isa = PBXBuildFile; fileRef = B0BE528B2941CFAA0003B292 /* block_recycler_queue.h */; };
 		B0F9824A28F29E9D00E46A9D /* DetailController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F9824928F29E9D00E46A9D /* DetailController.swift */; };
 		B0F9824D28F50F6500E46A9D /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F9824C28F50F6500E46A9D /* MainController.swift */; };
 		B0F9824F28F541C100E46A9D /* SlidePresentAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F9824E28F541C100E46A9D /* SlidePresentAnimator.swift */; };
@@ -62,6 +65,7 @@
 				B05F150A28DAA8B100DFD64F /* libswresample.3.9.100.dylib in Embed Libraries */,
 				B0A0A14429067C1B00A491CA /* libcrypto.dylib in Embed Libraries */,
 				B05F150228DAA8B000DFD64F /* libavutil.56.70.100.dylib in Embed Libraries */,
+				B01254482940718200E8507F /* libSDL2.dylib in Embed Libraries */,
 				B05F150028DAA8B000DFD64F /* libavformat.58.76.100.dylib in Embed Libraries */,
 				B05F150828DAA8B000DFD64F /* libpostproc.55.9.100.dylib in Embed Libraries */,
 				B0A0A14129067C1400A491CA /* libssl.dylib in Embed Libraries */,
@@ -86,7 +90,6 @@
 		B00221CD28C82B7D00A48EB6 /* MacVideoPlayer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MacVideoPlayer.entitlements; sourceTree = "<group>"; };
 		B00221F028C8815600A48EB6 /* MacVideoPlayer-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MacVideoPlayer-Bridging-Header.h"; sourceTree = "<group>"; };
 		B00221F128C8815700A48EB6 /* media_manager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = media_manager.cpp; sourceTree = "<group>"; wrapsLines = 0; };
-		B00221F228C8815700A48EB6 /* media_manager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = media_manager.hpp; sourceTree = "<group>"; };
 		B002220328C88C8A00A48EB6 /* oc_media.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = oc_media.h; sourceTree = "<group>"; };
 		B002220428C88C8A00A48EB6 /* oc_media.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = oc_media.mm; sourceTree = "<group>"; };
 		B00222E028C8A4AF00A48EB6 /* libavformat.58.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.58.dylib; path = libs/ffmpeg/libavformat.58.dylib; sourceTree = "<group>"; };
@@ -100,6 +103,8 @@
 		B00222F128CAE22900A48EB6 /* libswresample.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswresample.dylib; path = libs/ffmpeg/libswresample.dylib; sourceTree = "<group>"; };
 		B00222F928CB101A00A48EB6 /* audio_recorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = audio_recorder.h; sourceTree = "<group>"; };
 		B00222FA28CB101A00A48EB6 /* audio_recorder.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = audio_recorder.c; sourceTree = "<group>"; };
+		B01254462940718200E8507F /* libSDL2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libSDL2.dylib; path = ../../../../../usr/local/Cellar/sdl2/2.0.22/lib/libSDL2.dylib; sourceTree = "<group>"; };
+		B0557D812941CD2A00356E8B /* media_manager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = media_manager.hpp; sourceTree = "<group>"; };
 		B05F14F428DAA8B000DFD64F /* libavresample.4.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavresample.4.0.0.dylib; path = libs/ffmpeg/libavresample.4.0.0.dylib; sourceTree = "<group>"; };
 		B05F14F528DAA8B000DFD64F /* libavformat.58.76.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.58.76.100.dylib; path = libs/ffmpeg/libavformat.58.76.100.dylib; sourceTree = "<group>"; };
 		B05F14F628DAA8B000DFD64F /* libavutil.56.70.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.56.70.100.dylib; path = libs/ffmpeg/libavutil.56.70.100.dylib; sourceTree = "<group>"; };
@@ -117,6 +122,7 @@
 		B0A0A14229067C1A00A491CA /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = "../../../../../usr/local/Cellar/openssl@3/3.0.5/lib/libcrypto.dylib"; sourceTree = "<group>"; };
 		B0A0A145290681AC00A491CA /* publisher.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = publisher.cpp; sourceTree = "<group>"; };
 		B0A0A146290681AC00A491CA /* publisher.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = publisher.hpp; sourceTree = "<group>"; };
+		B0BE528B2941CFAA0003B292 /* block_recycler_queue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = block_recycler_queue.h; path = "../../../../Cpp-Study/MyVideoPlayer/src/block/block_recycler_queue.h"; sourceTree = "<group>"; };
 		B0F9824928F29E9D00E46A9D /* DetailController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailController.swift; sourceTree = "<group>"; };
 		B0F9824C28F50F6500E46A9D /* MainController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainController.swift; sourceTree = "<group>"; };
 		B0F9824E28F541C100E46A9D /* SlidePresentAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlidePresentAnimator.swift; sourceTree = "<group>"; };
@@ -136,6 +142,7 @@
 				B0A0A13D29067BF200A491CA /* librtmp.dylib in Frameworks */,
 				B0A0A13B29067B8A00A491CA /* libz.1.2.8.tbd in Frameworks */,
 				B0A0A14329067C1A00A491CA /* libcrypto.dylib in Frameworks */,
+				B01254472940718200E8507F /* libSDL2.dylib in Frameworks */,
 				B0A0A14029067C1400A491CA /* libssl.dylib in Frameworks */,
 				B05F150528DAA8B000DFD64F /* libswscale.5.9.100.dylib in Frameworks */,
 				260A42407BA2C5C45647D4A2 /* Pods_MacVideoPlayer.framework in Frameworks */,
@@ -151,6 +158,7 @@
 		03245FD56EAFD05A0E521F85 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B01254462940718200E8507F /* libSDL2.dylib */,
 				B0A0A14229067C1A00A491CA /* libcrypto.dylib */,
 				B0A0A13F29067C1400A491CA /* libssl.dylib */,
 				B0A0A13C29067BF200A491CA /* librtmp.dylib */,
@@ -240,7 +248,8 @@
 			isa = PBXGroup;
 			children = (
 				B00221F128C8815700A48EB6 /* media_manager.cpp */,
-				B00221F228C8815700A48EB6 /* media_manager.hpp */,
+				B0557D812941CD2A00356E8B /* media_manager.hpp */,
+				B0BE528B2941CFAA0003B292 /* block_recycler_queue.h */,
 				B0A0A145290681AC00A491CA /* publisher.cpp */,
 				B0A0A146290681AC00A491CA /* publisher.hpp */,
 			);
@@ -372,6 +381,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B0BE528C2941CFB30003B292 /* block_recycler_queue.h in Sources */,
 				B00221C628C82B7200A48EB6 /* ViewController.swift in Sources */,
 				B0F9824D28F50F6500E46A9D /* MainController.swift in Sources */,
 				B0F9824F28F541C100E46A9D /* SlidePresentAnimator.swift in Sources */,
@@ -537,6 +547,7 @@
 					"$(PROJECT_DIR)/libs/ffmpeg",
 					"/usr/local/Cellar/rtmpdump/2.4+20151223_1/lib",
 					"/usr/local/Cellar/openssl@3/3.0.5/lib",
+					/usr/local/Cellar/sdl2/2.0.22/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.hackyang.qpid.MacVideoPlayer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -546,6 +557,7 @@
 				"SYSTEM_HEADER_SEARCH_PATHS[arch=*]" = (
 					"/usr/local/Cellar/openssl@3/3.0.5/include",
 					"/usr/local/Cellar/rtmpdump/2.4+20151223_1/include",
+					/usr/local/Cellar/sdl2/2.0.22/include,
 				);
 				"USER_HEADER_SEARCH_PATHS[arch=*]" = /Users/steven/Dev_Project/ios/MacVideoPlayer/include/ffmpeg;
 			};
@@ -573,6 +585,7 @@
 					"$(PROJECT_DIR)/libs/ffmpeg",
 					"/usr/local/Cellar/rtmpdump/2.4+20151223_1/lib",
 					"/usr/local/Cellar/openssl@3/3.0.5/lib",
+					/usr/local/Cellar/sdl2/2.0.22/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.hackyang.qpid.MacVideoPlayer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -581,6 +594,7 @@
 				"SYSTEM_HEADER_SEARCH_PATHS[arch=*]" = (
 					"/usr/local/Cellar/openssl@3/3.0.5/include",
 					"/usr/local/Cellar/rtmpdump/2.4+20151223_1/include",
+					/usr/local/Cellar/sdl2/2.0.22/include,
 				);
 				"USER_HEADER_SEARCH_PATHS[arch=*]" = /Users/steven/Dev_Project/ios/MacVideoPlayer/include/ffmpeg;
 			};
