@@ -105,7 +105,7 @@
          contextName = "MediaManager::audioCallBack(void*, unsigned char*, int):media_manager.cpp">
          <PersistentStrings>
             <PersistentString
-               value = "md-&gt;audio_buffer[0]">
+               value = "frame-&gt;pts * av_q2d(md-&gt;audioDecodeCtx-&gt;time_base)">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

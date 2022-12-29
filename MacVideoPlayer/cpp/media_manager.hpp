@@ -57,8 +57,9 @@ struct MediaData {
     AVSampleFormat out_sample_fmt;
     SwrContext *swrContext;
     uint8_t *audio_buffer;
-    int audio_len;
     uint8_t *audio_pos;
+    int audio_len;
+    int audio_buffer_index;
     
 };
 
