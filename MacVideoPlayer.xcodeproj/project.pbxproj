@@ -535,6 +535,7 @@
 				CODE_SIGN_ENTITLEMENTS = MacVideoPlayer/MacVideoPlayer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = MK37J4UMHH;
 				ENABLE_HARDENED_RUNTIME = NO;
 				INFOPLIST_FILE = MacVideoPlayer/Info.plist;

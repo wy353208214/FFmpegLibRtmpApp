@@ -131,10 +131,16 @@ private:
      @param codecContext 编码器上下文
      @param outFmtContext 输出上下文
      @param frame 编码前的frame数据
-     @param avPacket 编码后packet数据
+     @param stream 视频流stream
      */
     void encodeToH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *frame, AVStream* stream);
     
+    
+    /// 保存为H264文件
+    /// @param codecContext 编码器上下文
+    /// @param outFmtContext 输出上下文
+    /// @param frame 解码后的frame
+    /// @param avPacket 封装后的packet
     void saveH264(AVCodecContext *codecContext, AVFormatContext* outFmtContext, AVFrame *frame, AVPacket *avPacket);
     
     /// AAC编码
@@ -203,9 +209,16 @@ private:
     static void disCardCallBack(AVFrame *frame);
     
     
+    
+    /// 视频刷新定时器
+    /// @param md 媒体相关的结构体
+    /// @param delay 延时时间
     void scheduleVideoRefresh(MediaData *md, int delay);
     
     
+    /// 定时器回调函数
+    /// @param interval 延时时间
+    /// @param udata 用户数据
     static Uint32 sdlRefeshCallBack(Uint32 interval, void *udata);
     
     

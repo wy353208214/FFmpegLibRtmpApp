@@ -87,6 +87,17 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
+         contextName = "MediaManager::videoRefreshTimer(void*):media_manager.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "frame-&gt;pts * av_q2d(md-&gt;videoDecodeCtx-&gt;time_base)">
+            </PersistentString>
+            <PersistentString
+               value = "frame-&gt;pts * av_q2d(md-&gt;inFmtCtx-&gt;streams[md-&gt;videoIndex]-&gt;time_base)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "MainController.collectionView(_:itemForRepresentedObjectAt:):MainController.swift">
       </ContextState>
       <ContextState
@@ -105,7 +116,10 @@
          contextName = "MediaManager::audioCallBack(void*, unsigned char*, int):media_manager.cpp">
          <PersistentStrings>
             <PersistentString
-               value = "frame-&gt;pts * av_q2d(md-&gt;audioDecodeCtx-&gt;time_base)">
+               value = "av_q2d(md-&gt;audioDecodeCtx-&gt;time_base)">
+            </PersistentString>
+            <PersistentString
+               value = "md-&gt;inFmtCtx-&gt;streams[md-&gt;audioIndex]-&gt;time_base">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

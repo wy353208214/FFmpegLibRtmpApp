@@ -1023,6 +1023,7 @@ void MediaManager::play(const char* url) {
     SDL_Thread *decodeAudioThread = SDL_CreateThread(decodeAudioPacket, "解码音频线程", (void*) &mediaData);
     //    SDL_WaitThread(demuxeThread, NULL);
     
+    
     while (true) {
         //监听事件，否则窗口不会创建
         SDL_Event event;
@@ -1078,13 +1079,13 @@ _End:
     delete videoPktQueue;
     delete audioPktQueue;
     delete videoFrameQueue;
+    delete audioFrameQueue;
     
     cout<<"Play is end"<<endl;
 }
 
 int MediaManager::demuxePacket(void *data) {
     MediaData *md = (MediaData*) data;
-    
     
     //设置swrContext参数
     md->audio_buffer = (uint8_t *) av_malloc(MAX_AUDIO_FRAME_SIZE * 4);
@@ -1143,7 +1144,7 @@ int MediaManager::demuxePacket(void *data) {
         
     }
     swr_free(&(md->swrContext));
-    //    av_free(&md->audio_buffer);
+    av_free(md->audio_buffer);
     cout<<"demuxePacket thread end"<<endl;
     return 1;
 }
@@ -1186,6 +1187,7 @@ int MediaManager::decodeVideoPacket(void *data) {
             }
             md->videoFrameQueue->put(frame);
         }
+        av_packet_unref(pkt);
         md->videoPktQueue->putToUsed(pkt);
         
     }
@@ -1233,6 +1235,7 @@ int MediaManager::decodeAudioPacket(void *data) {
             }
             md->audioFrameQueue->put(frame);
         }
+        av_packet_unref(pkt);
         md->audioPktQueue->putToUsed(pkt);
         
     }
@@ -1283,6 +1286,7 @@ void MediaManager::updateTexture(AVFrame *frame) {
     SDL_RenderPresent(mediaData.render);
     
     //释放
+    av_frame_unref(convertFrame);
     av_frame_free(&convertFrame);
 }
 
@@ -1290,33 +1294,13 @@ void MediaManager::updateTexture(AVFrame *frame) {
 void MediaManager::audioCallBack(void *udata, Uint8 *stream, int len) {
     MediaData *md = (MediaData*) udata;
     SDL_memset(stream, 0, len);
+    
     if (md->quit) {
         return;
     }
     
     //读取数据
     while (len > 0) {
-        //        if(len == 0)
-        //            return;
-        //
-        //        AVFrame *frame = md->audioFrameQueue->get();
-        //        if(frame == NULL)
-        //            return;
-        //
-        //        int count = swr_convert(md->swrContext, &(md->audio_buffer), MAX_AUDIO_FRAME_SIZE, (const uint8_t **) frame->data, frame->nb_samples);
-        //        int buffer_size = count * md->out_channels * av_get_bytes_per_sample(md->out_sample_fmt);
-        //        md->audio_len = buffer_size;
-        //        md->audio_pos = md->audio_buffer;
-        //
-        //        int temp_len = len > md->audio_len ? md->audio_len : len;
-        //        SDL_MixAudio(stream, md->audio_pos, temp_len, SDL_MIX_MAXVOLUME);
-        //        md->audio_pos += temp_len;
-        //        md->audio_len -= temp_len;
-        //        stream += temp_len;
-        //        len -= temp_len;
-        //
-        //        md->audioFrameQueue->putToUsed(frame);
-        
         if(len == 0)
             return;
         
@@ -1324,16 +1308,20 @@ void MediaManager::audioCallBack(void *udata, Uint8 *stream, int len) {
         //因此要做判断，当缓冲区还有数据的时候不要解码下一帧数据，继续播放上一帧未播放完毕的剩余数据
         if(md->audio_buffer_index >= md->audio_len) {
             AVFrame *frame = md->audioFrameQueue->get();
-            cout<<"当前音频时间:"<<frame->pts * av_q2d(md->audioDecodeCtx->time_base)<<endl;
-    
             if(frame == NULL)
                 return;
+            
+//            //计算当前帧时间，需要stream的时间基计算
+//            cout<<"Audio Frame pts："<<frame->pts * av_q2d(md->inFmtCtx->streams[md->audioIndex]->time_base)<<endl;
             
             int count = swr_convert(md->swrContext, &(md->audio_buffer), MAX_AUDIO_FRAME_SIZE, (const uint8_t **) frame->data, frame->nb_samples);
             //计算转换后的audio_buffer缓冲区大小
             int buffer_size = count * md->out_channels * av_get_bytes_per_sample(md->out_sample_fmt);
             md->audio_len = buffer_size;
             md->audio_buffer_index = 0;
+            
+            //释放frame
+            av_frame_unref(frame);
             md->audioFrameQueue->putToUsed(frame);
         }
         
@@ -1378,10 +1366,13 @@ void MediaManager::videoRefreshTimer(void *udata) {
     AVFrame *frame = md->videoFrameQueue->get();
     scheduleVideoRefresh(md, 40);
     
+//    //计算当前帧时间，需要stream的时间基计算
+//    cout<<"Video Frame pts："<<frame->pts * av_q2d(md->inFmtCtx->streams[md->videoIndex]->time_base)<<endl;
     //播放展示视频帧
     updateTexture(frame);
     
     //用完之后放到回收队列中，可重复用
+    av_frame_unref(frame);
     md->videoFrameQueue->putToUsed(frame);
 }
 
