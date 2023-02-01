@@ -30,6 +30,12 @@ enum RecordType {
     ALL,
 };
 
+struct VideoPicture {
+    AVFrame *frame;
+    double pts;
+};
+
+
 struct MediaData {
     AVFormatContext *inFmtCtx;
     
@@ -38,6 +44,8 @@ struct MediaData {
     
     BlockRecyclerQueue<AVFrame*> *videoFrameQueue;
     BlockRecyclerQueue<AVFrame*> *audioFrameQueue;
+    
+    BlockRecyclerQueue<VideoPicture*> *videoPicQueue;
     
     int videoIndex;
     int audioIndex;
@@ -53,15 +61,34 @@ struct MediaData {
     bool quit = false;
     SDL_mutex *mutex;
     
+    //音频相关参数
     int out_channels;
     AVSampleFormat out_sample_fmt;
+    int out_sample_rate;
     SwrContext *swrContext;
+    //解码后的音频数据指针
     uint8_t *audio_buffer;
-    uint8_t *audio_pos;
+//    uint8_t *audio_pos;
+    //解码后的音频数据长度
     int audio_len;
+    //当前正在播放的音频位置
     int audio_buffer_index;
     
+    //视频帧转换器
+    SwsContext *swsContext;
+    
+    //音频时钟
+    double audio_clock;
+    //视频时钟
+    double video_clock;
+    
+    double frame_timer;
+    double frame_last_pts;
+    double frame_last_delay;
+    
 };
+
+
 
 
 class MediaManager{
@@ -75,7 +102,6 @@ public:
     /// 播放音视频文件
     /// @param url 文件路径或者流媒体地址
     void play(const char *url);
-
     
 private:
     //音频缓冲区大小
@@ -208,7 +234,9 @@ private:
     /// @param frame 待清除的frame
     static void disCardCallBack(AVFrame *frame);
     
-    
+    /// 队列清除数据回调函数
+    /// @param vp 待清除的VideoPicture
+    static void disCardCallBack(VideoPicture *vp);
     
     /// 视频刷新定时器
     /// @param md 媒体相关的结构体
@@ -224,6 +252,19 @@ private:
     
     void videoRefreshTimer(void* udata);
     
+
+    static int getAudioByteForPerSec(MediaData *md);
+    
+    /// 获取音频时钟
+    /// @param md  媒体信息相关结构体
+    double getAudioClock(MediaData *md);
+    
+    
+    /// 同步重新计算当前帧的视频时钟
+    /// @param md 媒体信息相关结构体
+    /// @param srcFrame 视频帧Frame
+    /// @param pts 当前视频pts
+    static double synchronize_video(MediaData *md, AVFrame *srcFrame, double pts);
     
 };
 

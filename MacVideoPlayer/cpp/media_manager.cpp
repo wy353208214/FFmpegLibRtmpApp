@@ -948,6 +948,7 @@ AVFormatContext* MediaManager::openDevice(){
     return fmtContext;
 }
 
+
 void MediaManager::play(const char* url) {
     
     //初始化sdl
@@ -994,16 +995,18 @@ void MediaManager::play(const char* url) {
     
     BlockRecyclerQueue<AVPacket*> *videoPktQueue = new BlockRecyclerQueue<AVPacket*>(100);
     BlockRecyclerQueue<AVPacket*> *audioPktQueue = new BlockRecyclerQueue<AVPacket*>(100);
-    BlockRecyclerQueue<AVFrame*> *videoFrameQueue = new BlockRecyclerQueue<AVFrame*>(20);
+//    BlockRecyclerQueue<AVFrame*> *videoFrameQueue = new BlockRecyclerQueue<AVFrame*>(20);
     BlockRecyclerQueue<AVFrame*> *audioFrameQueue = new BlockRecyclerQueue<AVFrame*>(20);
+    BlockRecyclerQueue<VideoPicture*> *videoPicQueue = new BlockRecyclerQueue<VideoPicture*>(20);
     
     mediaData.inFmtCtx = inFmt;
     mediaData.audioIndex = audioIndex;
     mediaData.videoIndex = videoIndex;
     mediaData.audioPktQueue = audioPktQueue;
     mediaData.videoPktQueue = videoPktQueue;
-    mediaData.videoFrameQueue = videoFrameQueue;
+//    mediaData.videoFrameQueue = videoFrameQueue;
     mediaData.audioFrameQueue = audioFrameQueue;
+    mediaData.videoPicQueue = videoPicQueue;
     mediaData.audioDecodeCtx = audioDecodeCtx;
     mediaData.videoDecodeCtx = videoDecodeCtx;
     mediaData.window = window;
@@ -1051,18 +1054,20 @@ void MediaManager::play(const char* url) {
     
 _End:
     
-    videoFrameQueue->notifyWaitGet();
-    videoFrameQueue->notifyWaitPut();
+//    videoFrameQueue->notifyWaitGet();
+//    videoFrameQueue->notifyWaitPut();
     audioFrameQueue->notifyWaitGet();
     audioFrameQueue->notifyWaitPut();
     videoPktQueue->notifyWaitGet();
     videoPktQueue->notifyWaitPut();
     audioPktQueue->notifyWaitGet();
     audioPktQueue->notifyWaitPut();
+    videoPicQueue->notifyWaitGet();
+    videoPicQueue->notifyWaitPut();
     
     videoPktQueue->discardAll(disCardCallBack);
     audioPktQueue->discardAll(disCardCallBack);
-    videoFrameQueue->discardAll(disCardCallBack);
+//    videoFrameQueue->discardAll(disCardCallBack);
     audioFrameQueue->discardAll(disCardCallBack);
     
     SDL_DestroyWindow(window);
@@ -1078,14 +1083,19 @@ _End:
     
     delete videoPktQueue;
     delete audioPktQueue;
-    delete videoFrameQueue;
+//    delete videoFrameQueue;
     delete audioFrameQueue;
+    delete videoPicQueue;
     
     cout<<"Play is end"<<endl;
 }
 
 int MediaManager::demuxePacket(void *data) {
     MediaData *md = (MediaData*) data;
+    
+    //解封装开始时，获取系统时间，并设置初始延时
+    md->frame_timer = (double) av_gettime() / 1000000;
+    md->frame_last_delay = 40e-3;
     
     //设置swrContext参数
     md->audio_buffer = (uint8_t *) av_malloc(MAX_AUDIO_FRAME_SIZE * 4);
@@ -1095,6 +1105,7 @@ int MediaManager::demuxePacket(void *data) {
     int out_nb_samples = md->audioDecodeCtx->frame_size;
     int out_channels = av_get_channel_layout_nb_channels(out_ch_layout);
     
+    md->out_sample_rate = out_sample_rate;
     md->out_channels = out_channels;
     md->out_sample_fmt = out_sample_fmt;
     
@@ -1151,6 +1162,11 @@ int MediaManager::demuxePacket(void *data) {
 
 int MediaManager::decodeVideoPacket(void *data) {
     MediaData *md = (MediaData*) data;
+    AVFrame *frame = av_frame_alloc();
+    md->swsContext = sws_getContext(md->videoDecodeCtx->width, md->videoDecodeCtx->height, md->videoDecodeCtx->pix_fmt, md->videoDecodeCtx->width,
+                                md->videoDecodeCtx->height, AV_PIX_FMT_YUV420P, SWS_BILINEAR, NULL, NULL, NULL);
+    double pts;
+    
     while (true) {
         
         //结束退出
@@ -1158,6 +1174,7 @@ int MediaManager::decodeVideoPacket(void *data) {
             break;
         
         AVPacket *pkt = md->videoPktQueue->get();
+        pts = 0;
         int ret = avcodec_send_packet(md->videoDecodeCtx, pkt);
         if (ret == AVERROR_EOF) {
             break;
@@ -1169,28 +1186,50 @@ int MediaManager::decodeVideoPacket(void *data) {
             continue;
         }
         while (true) {
-            AVFrame *frame = md->videoFrameQueue->getUsed();
-            if(frame == NULL)
-                frame = av_frame_alloc();
+            VideoPicture *vp = md->videoPicQueue->getUsed();
+            if (vp == NULL) {
+                vp = new VideoPicture;
+                vp->frame = av_frame_alloc();
+            }
+            AVFrame *convertFrame = vp->frame;
             
             ret = avcodec_receive_frame(md->videoDecodeCtx, frame);
             if (ret == AVERROR_EOF || ret == -35) {
-                md->videoFrameQueue->putToUsed(frame);
+                md->videoPicQueue->putToUsed(vp);
                 break;
             }
             if (ret < 0) {
-                md->videoFrameQueue->putToUsed(frame);
+                md->videoPicQueue->putToUsed(vp);
                 char errbuf[100];
                 av_strerror(ret, errbuf, sizeof(errbuf));
                 cout << "avcode receive frame fail:" << errbuf << endl;
                 break;
             }
-            md->videoFrameQueue->put(frame);
+            
+            //转换frame，这里没有做优化，可以先判断pixel_fmt是否一样再做转换，提高效率
+            //TODO
+            int numBytes = av_image_get_buffer_size(AV_PIX_FMT_YUV420P, frame->width, frame->height, 1);
+            uint8_t *video_out_buffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
+            av_image_fill_arrays(convertFrame->data, convertFrame->linesize, video_out_buffer, AV_PIX_FMT_YUV420P,
+                                 frame->width, frame->height, 1);
+            sws_scale(md->swsContext, (const uint8_t *const *)frame->data, frame->linesize, 0, frame->height, convertFrame->data, convertFrame->linesize);
+            av_free(video_out_buffer);
+            
+            //重新计算pts
+            int64_t frame_pts = frame->pts;
+            pts = av_q2d(md->inFmtCtx->streams[md->videoIndex]->time_base) * frame_pts;
+            pts = synchronize_video(md, frame, pts);
+            vp->pts = pts;
+            
+            md->videoPicQueue->put(vp);
         }
+        av_frame_unref(frame);
         av_packet_unref(pkt);
         md->videoPktQueue->putToUsed(pkt);
         
     }
+    av_frame_free(&frame);
+    sws_freeContext(md->swsContext);
     cout<<"decodeVideoPacket end"<<endl;
     return 1;
 }
@@ -1214,6 +1253,12 @@ int MediaManager::decodeAudioPacket(void *data) {
             cout << "avcode send packet fail:" << errbuf << endl;
             continue;
         }
+        
+        //更新下audio_clock
+        if (pkt != NULL && pkt->pts != AV_NOPTS_VALUE) {
+            md->audio_clock = av_q2d(md->inFmtCtx->streams[md->audioIndex]->time_base) * pkt->pts;
+        }
+        
         while (true) {
             
             AVFrame *frame = md->audioFrameQueue->getUsed();
@@ -1244,29 +1289,16 @@ int MediaManager::decodeAudioPacket(void *data) {
 }
 
 
-void MediaManager::updateTexture(AVFrame *frame) {
+void MediaManager::updateTexture(AVFrame *convertFrame) {
     //要转换的视频
     int width = mediaData.videoDecodeCtx->width;
     int height =  mediaData.videoDecodeCtx->height;
-    int numBytes = av_image_get_buffer_size(AV_PIX_FMT_YUV420P, width, height, 1);
-    uint8_t *video_out_buffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
-    
-    AVFrame *convertFrame = av_frame_alloc();
-    av_image_fill_arrays(convertFrame->data, convertFrame->linesize, video_out_buffer, AV_PIX_FMT_YUV420P,
-                         width, height, 1);
-    swsContext = sws_getContext(width, height, mediaData.videoDecodeCtx->pix_fmt, width,
-                                height, AV_PIX_FMT_YUV420P, SWS_BILINEAR, NULL, NULL, NULL);
-    sws_scale(swsContext, (const uint8_t *const *)frame->data, frame->linesize, 0, height, convertFrame->data, convertFrame->linesize);
-    
-    av_free(video_out_buffer);
-    sws_freeContext(swsContext);
     
     // SDL渲染显示视频
     SDL_UpdateYUVTexture(mediaData.texture, NULL,
                          convertFrame->data[0], convertFrame->linesize[0],
                          convertFrame->data[1], convertFrame->linesize[1],
                          convertFrame->data[2], convertFrame->linesize[2]);
-    
     
     
     // 设置渲染的位置（0，0）代表window的左上角，以下方式计算可以保证居中显示
@@ -1287,7 +1319,6 @@ void MediaManager::updateTexture(AVFrame *frame) {
     
     //释放
     av_frame_unref(convertFrame);
-    av_frame_free(&convertFrame);
 }
 
 
@@ -1320,6 +1351,9 @@ void MediaManager::audioCallBack(void *udata, Uint8 *stream, int len) {
             md->audio_len = buffer_size;
             md->audio_buffer_index = 0;
             
+            //更新当前帧的audio_clock
+            md->audio_clock = (double) buffer_size / (double) getAudioByteForPerSec(md);
+            
             //释放frame
             av_frame_unref(frame);
             md->audioFrameQueue->putToUsed(frame);
@@ -1331,10 +1365,10 @@ void MediaManager::audioCallBack(void *udata, Uint8 *stream, int len) {
         int temp_len = len > audio_play_len ? audio_play_len : len;
         //SDL开始混音播放数据
         SDL_MixAudio(stream, md->audio_buffer + md->audio_buffer_index, temp_len, SDL_MIX_MAXVOLUME);
-        //更新音频解码缓冲区播放的位置
+        //更新音频解码缓冲区已播放的位置
         md->audio_buffer_index += temp_len;
         //更新剩余的音频大小
-        md->audio_len -= temp_len;
+//        md->audio_len -= temp_len;
         stream += temp_len;
         len -= temp_len;
         
@@ -1357,23 +1391,95 @@ Uint32 MediaManager::sdlRefeshCallBack(Uint32 interval, void *udata) {
     return 0;
 }
 
+
 //从videoFrame队列中取出frame
 void MediaManager::videoRefreshTimer(void *udata) {
     MediaData *md = (MediaData*) udata;
     if(md->quit){
         return;
     }
-    AVFrame *frame = md->videoFrameQueue->get();
-    scheduleVideoRefresh(md, 40);
     
-//    //计算当前帧时间，需要stream的时间基计算
-//    cout<<"Video Frame pts："<<frame->pts * av_q2d(md->inFmtCtx->streams[md->videoIndex]->time_base)<<endl;
+    VideoPicture *vp = md->videoPicQueue->get();
+    AVFrame *frame = vp->frame;
+//
+//    //这里是音视频同步的核心算法
+//    double actual_delay, delay, sync_threshold, ref_clock, diff;
+//    delay = vp->pts - md->frame_last_pts;
+//    if (delay <= 0 || delay >= 1.0) {
+//        delay = md->frame_last_delay;
+//    }
+//    md->frame_last_pts = vp->pts;
+//    md->frame_last_delay = delay;
+//
+//    ref_clock = getAudioClock(md);
+//    diff = vp->pts - ref_clock;
+//
+//    //0.01是10毫秒
+//    sync_threshold = (delay > 0.01) ? delay : 0.01;
+//    if (fabs(diff) < 10.0) {
+//        //如果视频 - 音频 差值小于阈值，说明视频播慢了，需要加快，延时设为0
+//        if (diff <= -sync_threshold) {
+//            delay = 0;
+//        }
+//        //如果视频 - 音频 差值大于阈值，说明视频播快了，需要放慢，延时加倍
+//        else if(diff >= sync_threshold) {
+//            delay = delay * 2;
+//        }
+//    }
+//    md->frame_timer += delay;
+//    actual_delay = md->frame_timer - av_gettime() / 1000000;
+//    //延时不能低于10毫秒
+//    if (actual_delay < 0.010) {
+//        actual_delay = 0.010;
+//    }
+//    //设置下次刷新时间，这里4000代表毫秒，和刷新率有关，25fps相当于一帧1/25秒
+//    scheduleVideoRefresh(md, (int) (actual_delay * 1000 + 0.5));
+    
+    scheduleVideoRefresh(md, 40);
     //播放展示视频帧
     updateTexture(frame);
     
+//    //计算当前帧时间，需要stream的时间基计算
+//    cout<<"Video Frame pts："<<frame->pts * av_q2d(md->inFmtCtx->streams[md->videoIndex]->time_base)<<endl;
+    
     //用完之后放到回收队列中，可重复用
     av_frame_unref(frame);
-    md->videoFrameQueue->putToUsed(frame);
+    md->videoPicQueue->putToUsed(vp);
+//    md->videoFrameQueue->putToUsed(frame);
+}
+
+
+double MediaManager::getAudioClock(MediaData *md) {
+    double pts = md->audio_clock;
+    //剩余未播放的音频大小
+    int hw_buffer_size = md->audio_len - md->audio_buffer_index;
+    //一秒钟播放的音频大小 = 采样位数 * 采样通道数 * 采样率
+    int byte_per_sec = 0;
+    //判断音频流是否为null
+    if(md->inFmtCtx->streams[md->audioIndex]) {
+        byte_per_sec = getAudioByteForPerSec(md);
+    }
+    if (byte_per_sec) {
+        //计算剩余数据的pts
+        pts -= (double) hw_buffer_size / byte_per_sec;
+    }
+    return pts;
+}
+
+
+double MediaManager::synchronize_video(MediaData *md, AVFrame *srcFrame, double pts) {
+    double frame_delay;
+    if(pts != 0) {
+        md->video_clock = pts;
+    }else {
+        pts = md->video_clock;
+    }
+    //计算一帧的时长
+    frame_delay = av_q2d(md->inFmtCtx->streams[md->videoIndex]->time_base);
+    //如果有重复图片，需要重新计算
+    frame_delay += srcFrame->repeat_pict * frame_delay/2;
+    md->video_clock += frame_delay;
+    return pts;
 }
 
 
@@ -1388,3 +1494,18 @@ void MediaManager::disCardCallBack(AVFrame *frame) {
     if (frame != NULL)
         av_frame_free(&frame);
 }
+
+void MediaManager::disCardCallBack(VideoPicture *vp) {
+    if (vp != NULL)
+        av_frame_free(&(vp->frame));
+        delete vp;
+}
+
+
+int MediaManager::getAudioByteForPerSec(MediaData *md) {
+    //采样位数 * 采样通道数 * 采样率
+    int bytes = md->out_channels * md->out_sample_rate * av_get_bytes_per_sample(md->out_sample_fmt);
+    return bytes;
+}
+
+

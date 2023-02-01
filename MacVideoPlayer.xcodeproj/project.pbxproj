@@ -44,7 +44,6 @@
 		B0A0A14329067C1A00A491CA /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A0A14229067C1A00A491CA /* libcrypto.dylib */; };
 		B0A0A14429067C1B00A491CA /* libcrypto.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = B0A0A14229067C1A00A491CA /* libcrypto.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B0A0A147290681AC00A491CA /* publisher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A0A145290681AC00A491CA /* publisher.cpp */; };
-		B0BE528C2941CFB30003B292 /* block_recycler_queue.h in Sources */ = {isa = PBXBuildFile; fileRef = B0BE528B2941CFAA0003B292 /* block_recycler_queue.h */; };
 		B0F9824A28F29E9D00E46A9D /* DetailController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F9824928F29E9D00E46A9D /* DetailController.swift */; };
 		B0F9824D28F50F6500E46A9D /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F9824C28F50F6500E46A9D /* MainController.swift */; };
 		B0F9824F28F541C100E46A9D /* SlidePresentAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F9824E28F541C100E46A9D /* SlidePresentAnimator.swift */; };
@@ -114,6 +113,7 @@
 		B05F14FA28DAA8B000DFD64F /* libswresample.3.9.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswresample.3.9.100.dylib; path = libs/ffmpeg/libswresample.3.9.100.dylib; sourceTree = "<group>"; };
 		B05F14FB28DAA8B000DFD64F /* libavdevice.58.13.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavdevice.58.13.100.dylib; path = libs/ffmpeg/libavdevice.58.13.100.dylib; sourceTree = "<group>"; };
 		B05F14FC28DAA8B000DFD64F /* libavfilter.7.110.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavfilter.7.110.100.dylib; path = libs/ffmpeg/libavfilter.7.110.100.dylib; sourceTree = "<group>"; };
+		B0957406295EDE0700DE24ED /* block_recycler_queue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = block_recycler_queue.h; sourceTree = "<group>"; };
 		B0A0A13529027FD300A491CA /* MyCellItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCellItem.swift; sourceTree = "<group>"; };
 		B0A0A1372906759100A491CA /* librtmp.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = librtmp.1.dylib; path = "../../../../../usr/local/Cellar/rtmpdump/2.4+20151223_1/lib/librtmp.1.dylib"; sourceTree = "<group>"; };
 		B0A0A13A29067B7700A491CA /* libz.1.2.8.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.8.tbd; path = usr/lib/libz.1.2.8.tbd; sourceTree = SDKROOT; };
@@ -122,7 +122,6 @@
 		B0A0A14229067C1A00A491CA /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = "../../../../../usr/local/Cellar/openssl@3/3.0.5/lib/libcrypto.dylib"; sourceTree = "<group>"; };
 		B0A0A145290681AC00A491CA /* publisher.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = publisher.cpp; sourceTree = "<group>"; };
 		B0A0A146290681AC00A491CA /* publisher.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = publisher.hpp; sourceTree = "<group>"; };
-		B0BE528B2941CFAA0003B292 /* block_recycler_queue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = block_recycler_queue.h; path = "../../../../Cpp-Study/MyVideoPlayer/src/block/block_recycler_queue.h"; sourceTree = "<group>"; };
 		B0F9824928F29E9D00E46A9D /* DetailController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailController.swift; sourceTree = "<group>"; };
 		B0F9824C28F50F6500E46A9D /* MainController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainController.swift; sourceTree = "<group>"; };
 		B0F9824E28F541C100E46A9D /* SlidePresentAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlidePresentAnimator.swift; sourceTree = "<group>"; };
@@ -249,9 +248,9 @@
 			children = (
 				B00221F128C8815700A48EB6 /* media_manager.cpp */,
 				B0557D812941CD2A00356E8B /* media_manager.hpp */,
-				B0BE528B2941CFAA0003B292 /* block_recycler_queue.h */,
 				B0A0A145290681AC00A491CA /* publisher.cpp */,
 				B0A0A146290681AC00A491CA /* publisher.hpp */,
+				B0957406295EDE0700DE24ED /* block_recycler_queue.h */,
 			);
 			path = cpp;
 			sourceTree = "<group>";
@@ -381,7 +380,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B0BE528C2941CFB30003B292 /* block_recycler_queue.h in Sources */,
 				B00221C628C82B7200A48EB6 /* ViewController.swift in Sources */,
 				B0F9824D28F50F6500E46A9D /* MainController.swift in Sources */,
 				B0F9824F28F541C100E46A9D /* SlidePresentAnimator.swift in Sources */,
