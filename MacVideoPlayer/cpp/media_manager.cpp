@@ -1211,11 +1211,10 @@ int MediaManager::decodeVideoPacket(void *data) {
             vp->pts = pts;
             //放入解码后的vp队列中，给播放视频线程使用
             md->videoPicQueue->put(vp);
-            
-            //释放pkt，并放入重复队列使用
-            av_packet_unref(pkt);
-            md->videoPktQueue->putToUsed(pkt);
         }
+        //释放pkt，并放入重复队列使用
+        av_packet_unref(pkt);
+        md->videoPktQueue->putToUsed(pkt);
     }
     
     sws_freeContext(md->swsContext);
@@ -1368,7 +1367,6 @@ void MediaManager::audioCallBack(void *udata, Uint8 *stream, int len) {
 
         stream += temp_len;
         len -= temp_len;
-        
     }
 }
 
@@ -1380,7 +1378,6 @@ void MediaManager::scheduleVideoRefresh(MediaData *md, int delay) {
 
 Uint32 MediaManager::sdlRefeshCallBack(Uint32 interval, void *udata) {
     //通知刷新页面，并将数据传递到SDL事件中
-    //    SDL_Delay(40);
     SDL_Event event;
     event.type = SDL_DISPLAYEVENT;
     event.user.data1 = udata;
