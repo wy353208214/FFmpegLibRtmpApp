@@ -986,6 +986,7 @@ void MediaManager::play(const char* url) {
         cout<<"SDL_Render create failed"<<endl;
         return;
     }
+    text_mutex = SDL_CreateMutex();
     SDL_Texture *texture = SDL_CreateTexture(render, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, videoDecodeCtx->width, videoDecodeCtx->height);
     if (texture == NULL) {
         cout<<"SDL_Textture create failed"<<endl;
@@ -995,7 +996,6 @@ void MediaManager::play(const char* url) {
     
     BlockRecyclerQueue<AVPacket*> *videoPktQueue = new BlockRecyclerQueue<AVPacket*>(100);
     BlockRecyclerQueue<AVPacket*> *audioPktQueue = new BlockRecyclerQueue<AVPacket*>(100);
-//    BlockRecyclerQueue<AVFrame*> *videoFrameQueue = new BlockRecyclerQueue<AVFrame*>(20);
     BlockRecyclerQueue<AVFrame*> *audioFrameQueue = new BlockRecyclerQueue<AVFrame*>(20);
     BlockRecyclerQueue<VideoPicture*> *videoPicQueue = new BlockRecyclerQueue<VideoPicture*>(20);
     
@@ -1004,7 +1004,6 @@ void MediaManager::play(const char* url) {
     mediaData.videoIndex = videoIndex;
     mediaData.audioPktQueue = audioPktQueue;
     mediaData.videoPktQueue = videoPktQueue;
-//    mediaData.videoFrameQueue = videoFrameQueue;
     mediaData.audioFrameQueue = audioFrameQueue;
     mediaData.videoPicQueue = videoPicQueue;
     mediaData.audioDecodeCtx = audioDecodeCtx;
@@ -1024,7 +1023,7 @@ void MediaManager::play(const char* url) {
     SDL_Thread *decodeVideoThread = SDL_CreateThread(decodeVideoPacket, "解码视频线程", (void*) &mediaData);
     //音频解码线程
     SDL_Thread *decodeAudioThread = SDL_CreateThread(decodeAudioPacket, "解码音频线程", (void*) &mediaData);
-    //    SDL_WaitThread(demuxeThread, NULL);
+    
     
     
     while (true) {
@@ -1054,8 +1053,6 @@ void MediaManager::play(const char* url) {
     
 _End:
     
-//    videoFrameQueue->notifyWaitGet();
-//    videoFrameQueue->notifyWaitPut();
     audioFrameQueue->notifyWaitGet();
     audioFrameQueue->notifyWaitPut();
     videoPktQueue->notifyWaitGet();
@@ -1067,7 +1064,6 @@ _End:
     
     videoPktQueue->discardAll(disCardCallBack);
     audioPktQueue->discardAll(disCardCallBack);
-//    videoFrameQueue->discardAll(disCardCallBack);
     audioFrameQueue->discardAll(disCardCallBack);
     
     SDL_DestroyWindow(window);
@@ -1162,7 +1158,6 @@ int MediaManager::demuxePacket(void *data) {
 
 int MediaManager::decodeVideoPacket(void *data) {
     MediaData *md = (MediaData*) data;
-    AVFrame *frame = av_frame_alloc();
     md->swsContext = sws_getContext(md->videoDecodeCtx->width, md->videoDecodeCtx->height, md->videoDecodeCtx->pix_fmt, md->videoDecodeCtx->width,
                                 md->videoDecodeCtx->height, AV_PIX_FMT_YUV420P, SWS_BILINEAR, NULL, NULL, NULL);
     double pts;
@@ -1191,7 +1186,7 @@ int MediaManager::decodeVideoPacket(void *data) {
                 vp = new VideoPicture;
                 vp->frame = av_frame_alloc();
             }
-            AVFrame *convertFrame = vp->frame;
+            AVFrame *frame = vp->frame;
             
             ret = avcodec_receive_frame(md->videoDecodeCtx, frame);
             if (ret == AVERROR_EOF || ret == -35) {
@@ -1206,29 +1201,23 @@ int MediaManager::decodeVideoPacket(void *data) {
                 break;
             }
             
-            //转换frame，这里没有做优化，可以先判断pixel_fmt是否一样再做转换，提高效率
-            //TODO
-            int numBytes = av_image_get_buffer_size(AV_PIX_FMT_YUV420P, frame->width, frame->height, 1);
-            uint8_t *video_out_buffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
-            av_image_fill_arrays(convertFrame->data, convertFrame->linesize, video_out_buffer, AV_PIX_FMT_YUV420P,
-                                 frame->width, frame->height, 1);
-            sws_scale(md->swsContext, (const uint8_t *const *)frame->data, frame->linesize, 0, frame->height, convertFrame->data, convertFrame->linesize);
-            av_free(video_out_buffer);
-            
             //重新计算pts
-            int64_t frame_pts = frame->pts;
+            int64_t frame_pts = frame->best_effort_timestamp;
+            if (frame_pts == AV_NOPTS_VALUE) {
+                frame_pts = 0;
+            }
             pts = av_q2d(md->inFmtCtx->streams[md->videoIndex]->time_base) * frame_pts;
             pts = synchronize_video(md, frame, pts);
             vp->pts = pts;
-            
+            //放入解码后的vp队列中，给播放视频线程使用
             md->videoPicQueue->put(vp);
+            
+            //释放pkt，并放入重复队列使用
+            av_packet_unref(pkt);
+            md->videoPktQueue->putToUsed(pkt);
         }
-        av_frame_unref(frame);
-        av_packet_unref(pkt);
-        md->videoPktQueue->putToUsed(pkt);
-        
     }
-    av_frame_free(&frame);
+    
     sws_freeContext(md->swsContext);
     cout<<"decodeVideoPacket end"<<endl;
     return 1;
@@ -1281,44 +1270,57 @@ int MediaManager::decodeAudioPacket(void *data) {
             md->audioFrameQueue->put(frame);
         }
         av_packet_unref(pkt);
-        md->audioPktQueue->putToUsed(pkt);
+        md->videoPktQueue->putToUsed(pkt);
         
     }
     cout<<"decodeAudioPacket end"<<endl;
     return 1;
 }
 
+int resize = 1;
 
-void MediaManager::updateTexture(AVFrame *convertFrame) {
+void MediaManager::updateTexture(AVFrame *frame) {
     //要转换的视频
     int width = mediaData.videoDecodeCtx->width;
     int height =  mediaData.videoDecodeCtx->height;
     
+    //TODO
+    //这里可以做优化，如果pix_fmt格式一样，就无需转换
+    int numBytes = av_image_get_buffer_size(AV_PIX_FMT_YUV420P, width, height, 1);
+    uint8_t *video_out_buffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
+    AVFrame *convertFrame = av_frame_alloc();
+    av_image_fill_arrays(convertFrame->data, convertFrame->linesize, video_out_buffer, AV_PIX_FMT_YUV420P,
+                         width, height, 1);
+    sws_scale(mediaData.swsContext, (const uint8_t *const *)frame->data, frame->linesize, 0, height, convertFrame->data, convertFrame->linesize);
+    
+
     // SDL渲染显示视频
     SDL_UpdateYUVTexture(mediaData.texture, NULL,
                          convertFrame->data[0], convertFrame->linesize[0],
                          convertFrame->data[1], convertFrame->linesize[1],
                          convertFrame->data[2], convertFrame->linesize[2]);
-    
-    
+
     // 设置渲染的位置（0，0）代表window的左上角，以下方式计算可以保证居中显示
     //    rect.x = (win_width - video_width) / 2;
     //    rect.y = (win_height - video_height) / 2;
     //    rect.w = video_width;
     //    rect.h = video_height;
-    
+
     mediaData.rect.x = 0;
     mediaData.rect.y = 0;
     mediaData.rect.w = width;
     mediaData.rect.h = height;
     //显示图片
+    SDL_LockMutex(text_mutex);
     SDL_RenderClear(mediaData.render);
     SDL_RenderCopy(mediaData.render, mediaData.texture, NULL, &(mediaData.rect));
     // SDL_RenderCopyEx(renderer, texture, NULL, NULL, 90, NULL, SDL_FLIP_VERTICAL);
     SDL_RenderPresent(mediaData.render);
+    SDL_UnlockMutex(text_mutex);
     
-    //释放
-    av_frame_unref(convertFrame);
+    //释放资源
+    av_free(video_out_buffer);
+    av_frame_free(&convertFrame);
 }
 
 
@@ -1332,9 +1334,7 @@ void MediaManager::audioCallBack(void *udata, Uint8 *stream, int len) {
     
     //读取数据
     while (len > 0) {
-        if(len == 0)
-            return;
-        
+
         //由于len可能小于音频缓冲区的的audio_buffer大小，所以需要SDL回调多次才能播放完缓冲区的数据
         //因此要做判断，当缓冲区还有数据的时候不要解码下一帧数据，继续播放上一帧未播放完毕的剩余数据
         if(md->audio_buffer_index >= md->audio_len) {
@@ -1342,8 +1342,6 @@ void MediaManager::audioCallBack(void *udata, Uint8 *stream, int len) {
             if(frame == NULL)
                 return;
             
-//            //计算当前帧时间，需要stream的时间基计算
-//            cout<<"Audio Frame pts："<<frame->pts * av_q2d(md->inFmtCtx->streams[md->audioIndex]->time_base)<<endl;
             
             int count = swr_convert(md->swrContext, &(md->audio_buffer), MAX_AUDIO_FRAME_SIZE, (const uint8_t **) frame->data, frame->nb_samples);
             //计算转换后的audio_buffer缓冲区大小
@@ -1352,7 +1350,7 @@ void MediaManager::audioCallBack(void *udata, Uint8 *stream, int len) {
             md->audio_buffer_index = 0;
             
             //更新当前帧的audio_clock
-            md->audio_clock = (double) buffer_size / (double) getAudioByteForPerSec(md);
+            md->audio_clock += (double) buffer_size / (double) getAudioByteForPerSec(md);
             
             //释放frame
             av_frame_unref(frame);
@@ -1367,8 +1365,7 @@ void MediaManager::audioCallBack(void *udata, Uint8 *stream, int len) {
         SDL_MixAudio(stream, md->audio_buffer + md->audio_buffer_index, temp_len, SDL_MIX_MAXVOLUME);
         //更新音频解码缓冲区已播放的位置
         md->audio_buffer_index += temp_len;
-        //更新剩余的音频大小
-//        md->audio_len -= temp_len;
+
         stream += temp_len;
         len -= temp_len;
         
@@ -1399,53 +1396,60 @@ void MediaManager::videoRefreshTimer(void *udata) {
         return;
     }
     
+    if (md->videoPicQueue->getSize() == 0) {
+        scheduleVideoRefresh(md, 1);
+        return;
+    }
+
     VideoPicture *vp = md->videoPicQueue->get();
     AVFrame *frame = vp->frame;
-//
-//    //这里是音视频同步的核心算法
-//    double actual_delay, delay, sync_threshold, ref_clock, diff;
-//    delay = vp->pts - md->frame_last_pts;
-//    if (delay <= 0 || delay >= 1.0) {
-//        delay = md->frame_last_delay;
-//    }
-//    md->frame_last_pts = vp->pts;
-//    md->frame_last_delay = delay;
-//
-//    ref_clock = getAudioClock(md);
-//    diff = vp->pts - ref_clock;
-//
-//    //0.01是10毫秒
-//    sync_threshold = (delay > 0.01) ? delay : 0.01;
-//    if (fabs(diff) < 10.0) {
-//        //如果视频 - 音频 差值小于阈值，说明视频播慢了，需要加快，延时设为0
-//        if (diff <= -sync_threshold) {
-//            delay = 0;
-//        }
-//        //如果视频 - 音频 差值大于阈值，说明视频播快了，需要放慢，延时加倍
-//        else if(diff >= sync_threshold) {
-//            delay = delay * 2;
-//        }
-//    }
-//    md->frame_timer += delay;
-//    actual_delay = md->frame_timer - av_gettime() / 1000000;
-//    //延时不能低于10毫秒
-//    if (actual_delay < 0.010) {
-//        actual_delay = 0.010;
-//    }
-//    //设置下次刷新时间，这里4000代表毫秒，和刷新率有关，25fps相当于一帧1/25秒
-//    scheduleVideoRefresh(md, (int) (actual_delay * 1000 + 0.5));
+
+    //这里是音视频同步的核心算法
+    double actual_delay, delay, sync_threshold, ref_clock, diff;
+    delay = vp->pts - md->frame_last_pts;
+    if (delay <= 0 || delay >= 1.0) {
+        delay = md->frame_last_delay;
+    }
+    md->frame_last_pts = vp->pts;
+    md->frame_last_delay = delay;
+
+    ref_clock = getAudioClock(md);
+    diff = vp->pts - ref_clock;
+
+    //0.01是10毫秒
+    sync_threshold = (delay > 0.01) ? delay : 0.01;
+    if (fabs(diff) < 10.0) {
+        //如果视频 - 音频 差值小于阈值，说明视频播慢了，需要加快，延时设为0
+        if (diff <= -sync_threshold) {
+            delay = 0;
+        }
+        //如果视频 - 音频 差值大于阈值，说明视频播快了，需要放慢，延时加倍
+        else if(diff >= sync_threshold) {
+            delay = delay * 2;
+        }
+    }
+    md->frame_timer += delay;
+    actual_delay = md->frame_timer - (av_gettime() / 1000000.0);
+
+    //延时不能低于10毫秒
+    if (actual_delay < 0.010) {
+        actual_delay = 0.010;
+    }
     
-    scheduleVideoRefresh(md, 40);
+    int dd = (int) (actual_delay * 1000 + 0.5);
+//    cout<<"refresh_time is："<<dd<<endl;
+    //设置下次刷新时间，比如4000代表毫秒，和刷新率有关，25fps相当于一帧1/25秒
+    scheduleVideoRefresh(md, dd);
+    
     //播放展示视频帧
     updateTexture(frame);
-    
+
 //    //计算当前帧时间，需要stream的时间基计算
 //    cout<<"Video Frame pts："<<frame->pts * av_q2d(md->inFmtCtx->streams[md->videoIndex]->time_base)<<endl;
     
     //用完之后放到回收队列中，可重复用
     av_frame_unref(frame);
     md->videoPicQueue->putToUsed(vp);
-//    md->videoFrameQueue->putToUsed(frame);
 }
 
 
@@ -1477,7 +1481,7 @@ double MediaManager::synchronize_video(MediaData *md, AVFrame *srcFrame, double 
     //计算一帧的时长
     frame_delay = av_q2d(md->inFmtCtx->streams[md->videoIndex]->time_base);
     //如果有重复图片，需要重新计算
-    frame_delay += srcFrame->repeat_pict * frame_delay/2;
+    frame_delay += srcFrame->repeat_pict * (frame_delay * 0.5);
     md->video_clock += frame_delay;
     return pts;
 }

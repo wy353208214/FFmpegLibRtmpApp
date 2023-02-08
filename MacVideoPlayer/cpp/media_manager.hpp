@@ -119,6 +119,8 @@ private:
     
     MediaData mediaData;
     
+    SDL_mutex *text_mutex;
+    
     
     void recordAudioTask();
     void recordVideoTask();

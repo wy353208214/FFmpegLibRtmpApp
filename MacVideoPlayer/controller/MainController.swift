@@ -133,7 +133,7 @@ extension MainController: NSCollectionViewDataSource{
             
         case .Play:
 //            ff.play("/Users/steven/Movies/Video/S8.mp4")
-            ff.play("/Users/steven/Movies/Video/luoxiang.mp4")
+            ff.play("/Users/steven/Movies/Video/luoxiang.flv")
         }
     }
     
