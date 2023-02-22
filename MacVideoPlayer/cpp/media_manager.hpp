@@ -68,11 +68,12 @@ struct MediaData {
     SwrContext *swrContext;
     //解码后的音频数据指针
     uint8_t *audio_buffer;
-//    uint8_t *audio_pos;
     //解码后的音频数据长度
     int audio_len;
     //当前正在播放的音频位置
     int audio_buffer_index;
+    
+    uint8_t *audio_buffer1;
     
     //视频帧转换器
     SwsContext *swsContext;
@@ -85,10 +86,17 @@ struct MediaData {
     double frame_timer;
     double frame_last_pts;
     double frame_last_delay;
+    double frame_last_update;
+    
+    //是否暂停
+    bool pause = false;
     
 };
 
-
+template <typename T>
+T sum(T &a, T &b) {
+    return a + b;
+}
 
 
 class MediaManager{

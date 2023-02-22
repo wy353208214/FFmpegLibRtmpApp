@@ -7,9 +7,7 @@
 
 #ifndef audio_recorder_h
 #define audio_recorder_h
-
 #include <stdio.h>
-
 
 void audioRecord(const char *url);
 

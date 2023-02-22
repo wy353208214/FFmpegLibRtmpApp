@@ -1025,7 +1025,6 @@ void MediaManager::play(const char* url) {
     SDL_Thread *decodeAudioThread = SDL_CreateThread(decodeAudioPacket, "解码音频线程", (void*) &mediaData);
     
     
-    
     while (true) {
         //监听事件，否则窗口不会创建
         SDL_Event event;
@@ -1047,6 +1046,17 @@ void MediaManager::play(const char* url) {
                 break;
             case SDL_DISPLAYEVENT:
                 videoRefreshTimer(event.user.data1);
+                break;
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym) {
+                    case SDLK_p:
+                        if (mediaData.pause) {
+                            mediaData.frame_timer += av_gettime() / 1000000.0 - mediaData.frame_last_update;
+                        }
+                        mediaData.pause = !mediaData.pause;
+                        cout<<(mediaData.pause ? "Stop" : "Start")<<endl;
+                        break;
+                }
                 break;
         }
     }
@@ -1079,7 +1089,6 @@ _End:
     
     delete videoPktQueue;
     delete audioPktQueue;
-//    delete videoFrameQueue;
     delete audioFrameQueue;
     delete videoPicQueue;
     
@@ -1242,10 +1251,10 @@ int MediaManager::decodeAudioPacket(void *data) {
             continue;
         }
         
-        //更新下audio_clock
-        if (pkt != NULL && pkt->pts != AV_NOPTS_VALUE) {
-            md->audio_clock = av_q2d(md->inFmtCtx->streams[md->audioIndex]->time_base) * pkt->pts;
-        }
+//        //更新下audio_clock
+//        if (pkt != NULL && pkt->pts != AV_NOPTS_VALUE) {
+//            md->audio_clock = av_q2d(md->inFmtCtx->streams[md->audioIndex]->time_base) * pkt->pts;
+//        }
         
         while (true) {
             
@@ -1325,7 +1334,6 @@ void MediaManager::updateTexture(AVFrame *frame) {
 
 void MediaManager::audioCallBack(void *udata, Uint8 *stream, int len) {
     MediaData *md = (MediaData*) udata;
-    SDL_memset(stream, 0, len);
     
     if (md->quit) {
         return;
@@ -1337,23 +1345,36 @@ void MediaManager::audioCallBack(void *udata, Uint8 *stream, int len) {
         //由于len可能小于音频缓冲区的的audio_buffer大小，所以需要SDL回调多次才能播放完缓冲区的数据
         //因此要做判断，当缓冲区还有数据的时候不要解码下一帧数据，继续播放上一帧未播放完毕的剩余数据
         if(md->audio_buffer_index >= md->audio_len) {
-            AVFrame *frame = md->audioFrameQueue->get();
-            if(frame == NULL)
-                return;
             
-            
-            int count = swr_convert(md->swrContext, &(md->audio_buffer), MAX_AUDIO_FRAME_SIZE, (const uint8_t **) frame->data, frame->nb_samples);
-            //计算转换后的audio_buffer缓冲区大小
-            int buffer_size = count * md->out_channels * av_get_bytes_per_sample(md->out_sample_fmt);
-            md->audio_len = buffer_size;
+            if(md->pause){
+                int one_sample_size = av_samples_get_buffer_size(NULL, md->out_channels, 1, md->out_sample_fmt, 1);
+                md->audio_buffer1 = NULL;
+                md->audio_len = 512 /one_sample_size * one_sample_size;
+            } else {
+                AVFrame *frame = md->audioFrameQueue->get();
+                if(frame == NULL)
+                    return;
+                
+                //更新下audio_clock
+                if (frame->pts != AV_NOPTS_VALUE) {
+                    md->audio_clock = av_q2d(md->inFmtCtx->streams[md->audioIndex]->time_base) * frame->pts;
+                }
+                
+                int count = swr_convert(md->swrContext, &(md->audio_buffer), MAX_AUDIO_FRAME_SIZE, (const uint8_t **) frame->data, frame->nb_samples);
+                //计算转换后的audio_buffer缓冲区大小
+                int buffer_size = count * md->out_channels * av_get_bytes_per_sample(md->out_sample_fmt);
+                md->audio_len = buffer_size;
+                md->audio_buffer1 = md->audio_buffer;
+                
+                //重新计算播放当前帧的播放时长，然后再更新audio_clock
+                md->audio_clock += (double) buffer_size / (double) getAudioByteForPerSec(md);
+                
+                //释放frame
+                av_frame_unref(frame);
+                md->audioFrameQueue->putToUsed(frame);
+            }
+            //重置index
             md->audio_buffer_index = 0;
-            
-            //更新当前帧的audio_clock
-            md->audio_clock += (double) buffer_size / (double) getAudioByteForPerSec(md);
-            
-            //释放frame
-            av_frame_unref(frame);
-            md->audioFrameQueue->putToUsed(frame);
         }
         
         //计算当前剩余待播放的音频大小
@@ -1361,7 +1382,11 @@ void MediaManager::audioCallBack(void *udata, Uint8 *stream, int len) {
         //比较sdl的缓冲区len与audio_play_len的大小，选择小的播放，因为sdl缓冲区最多只能播放len数据
         int temp_len = len > audio_play_len ? audio_play_len : len;
         //SDL开始混音播放数据
-        SDL_MixAudio(stream, md->audio_buffer + md->audio_buffer_index, temp_len, SDL_MIX_MAXVOLUME);
+//        memcpy(stream, md->audio_buffer + md->audio_buffer_index, temp_len);
+        SDL_memset(stream, 0, len);
+        if(md->audio_buffer1) {
+            SDL_MixAudio(stream, md->audio_buffer1 + md->audio_buffer_index, temp_len, SDL_MIX_MAXVOLUME);
+        }
         //更新音频解码缓冲区已播放的位置
         md->audio_buffer_index += temp_len;
 
@@ -1393,7 +1418,7 @@ void MediaManager::videoRefreshTimer(void *udata) {
         return;
     }
     
-    if (md->videoPicQueue->getSize() == 0) {
+    if (md->videoPicQueue->getSize() == 0 || md->pause) {
         scheduleVideoRefresh(md, 1);
         return;
     }
@@ -1434,15 +1459,14 @@ void MediaManager::videoRefreshTimer(void *udata) {
     }
     
     int dd = (int) (actual_delay * 1000 + 0.5);
-//    cout<<"refresh_time is："<<dd<<endl;
     //设置下次刷新时间，比如4000代表毫秒，和刷新率有关，25fps相当于一帧1/25秒
     scheduleVideoRefresh(md, dd);
     
+    //更新视频上次刷新时间，用于暂停时同步时间使用
+    md->frame_last_update = av_gettime() / 1000000.0;
+    
     //播放展示视频帧
     updateTexture(frame);
-
-//    //计算当前帧时间，需要stream的时间基计算
-//    cout<<"Video Frame pts："<<frame->pts * av_q2d(md->inFmtCtx->streams[md->videoIndex]->time_base)<<endl;
     
     //用完之后放到回收队列中，可重复用
     av_frame_unref(frame);
