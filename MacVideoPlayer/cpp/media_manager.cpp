@@ -957,6 +957,7 @@ void MediaManager::play(const char* url) {
         exit(1);
     }
     
+    avformat_network_init();
     AVFormatContext *inFmt = avformat_alloc_context();
     int ret = avformat_open_input(&inFmt, url, NULL, NULL);
     if (ret < 0) {
@@ -1062,7 +1063,6 @@ void MediaManager::play(const char* url) {
     }
     
 _End:
-    
     audioFrameQueue->notifyWaitGet();
     audioFrameQueue->notifyWaitPut();
     videoPktQueue->notifyWaitGet();
@@ -1072,9 +1072,9 @@ _End:
     videoPicQueue->notifyWaitGet();
     videoPicQueue->notifyWaitPut();
     
-    videoPktQueue->discardAll(disCardCallBack);
-    audioPktQueue->discardAll(disCardCallBack);
-    audioFrameQueue->discardAll(disCardCallBack);
+    SDL_WaitThread(demuxeThread, NULL);
+    SDL_WaitThread(decodeVideoThread, NULL);
+    SDL_WaitThread(decodeAudioThread, NULL);
     
     SDL_DestroyWindow(window);
     SDL_DestroyTexture(texture);
@@ -1082,11 +1082,22 @@ _End:
     SDL_CloseAudio();
     SDL_Quit();
     
-    
+    avformat_network_deinit();
     avcodec_close(audioDecodeCtx);
     avcodec_close(videoDecodeCtx);
     avformat_close_input(&inFmt);
     
+    if (mediaData.swrContext)
+        swr_free(&(mediaData.swrContext));
+    if(mediaData.audio_buffer)
+        av_free(mediaData.audio_buffer);
+    if (mediaData.swsContext) {
+        sws_freeContext(mediaData.swsContext);
+    }
+    
+    videoPktQueue->discardAll(disCardCallBack);
+    audioPktQueue->discardAll(disCardCallBack);
+    audioFrameQueue->discardAll(disCardCallBack);
     delete videoPktQueue;
     delete audioPktQueue;
     delete audioFrameQueue;
@@ -1132,7 +1143,6 @@ int MediaManager::demuxePacket(void *data) {
     }
     SDL_PauseAudio(0);
     
-    
     //解封装packet
     while (true) {
         
@@ -1159,8 +1169,6 @@ int MediaManager::demuxePacket(void *data) {
         }
         
     }
-    swr_free(&(md->swrContext));
-    av_free(md->audio_buffer);
     cout<<"demuxePacket thread end"<<endl;
     return 1;
 }
@@ -1190,6 +1198,11 @@ int MediaManager::decodeVideoPacket(void *data) {
             continue;
         }
         while (true) {
+            
+            //结束退出
+            if (md->quit)
+                break;
+            
             VideoPicture *vp = md->videoPicQueue->getUsed();
             if (vp == NULL) {
                 vp = new VideoPicture;
@@ -1226,7 +1239,6 @@ int MediaManager::decodeVideoPacket(void *data) {
         md->videoPktQueue->putToUsed(pkt);
     }
     
-    sws_freeContext(md->swsContext);
     cout<<"decodeVideoPacket end"<<endl;
     return 1;
 }
@@ -1251,12 +1263,11 @@ int MediaManager::decodeAudioPacket(void *data) {
             continue;
         }
         
-//        //更新下audio_clock
-//        if (pkt != NULL && pkt->pts != AV_NOPTS_VALUE) {
-//            md->audio_clock = av_q2d(md->inFmtCtx->streams[md->audioIndex]->time_base) * pkt->pts;
-//        }
-        
         while (true) {
+            
+            //结束退出
+            if (md->quit)
+                break;
             
             AVFrame *frame = md->audioFrameQueue->getUsed();
             if (frame == NULL) {
@@ -1346,6 +1357,7 @@ void MediaManager::audioCallBack(void *udata, Uint8 *stream, int len) {
         //因此要做判断，当缓冲区还有数据的时候不要解码下一帧数据，继续播放上一帧未播放完毕的剩余数据
         if(md->audio_buffer_index >= md->audio_len) {
             
+            //暂停情况继续播放静音，但不更新audio_clock
             if(md->pause){
                 int one_sample_size = av_samples_get_buffer_size(NULL, md->out_channels, 1, md->out_sample_fmt, 1);
                 md->audio_buffer1 = NULL;
@@ -1501,7 +1513,7 @@ double MediaManager::synchronize_video(MediaData *md, AVFrame *srcFrame, double 
     }
     //计算一帧的时长
     frame_delay = av_q2d(md->inFmtCtx->streams[md->videoIndex]->time_base);
-    //如果有重复图片，需要重新计算
+    //如果有重复图片，需要重新计算，这里主要是为了防止frame没有pts时，重新估算video pts
     frame_delay += srcFrame->repeat_pict * (frame_delay * 0.5);
     md->video_clock += frame_delay;
     return pts;
