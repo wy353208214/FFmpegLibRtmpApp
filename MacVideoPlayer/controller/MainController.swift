@@ -27,6 +27,7 @@ class MainController: NSViewController{
     
     private let ff = OcMediaManager.init()
     
+    let urlText = NSTextField.init()
     
     override func loadView() {
         self.view = NSView(frame: CGRect(x: 0, y: 0, width: 480, height: 320))
@@ -38,12 +39,17 @@ class MainController: NSViewController{
         
         self.view.setFrameSize(NSSize(width: 480, height: 320))
         self.view.wantsLayer = true
-        self.view.layer?.backgroundColor = NSColor.blue.cgColor
-        
+//        self.view.layer?.backgroundColor = NSColor.blue.cgColor
         
         let scrollView = NSScrollView.init()
         let collectionView = NSCollectionView.init()
+        
+        urlText.placeholderString = "请输入播放地址rtmp、ftp、rtsp、本地文件"
+        urlText.maximumNumberOfLines = 1
+        
         self.view.addSubview(scrollView)
+        self.view.addSubview(urlText);
+        
         scrollView.documentView = collectionView
         
         collectionView.dataSource = self
@@ -53,8 +59,18 @@ class MainController: NSViewController{
         viewLayout.minimumInteritemSpacing = 2
         collectionView.collectionViewLayout = viewLayout
         
+        urlText.snp.makeConstraints{make -> Void in
+            make.top.equalToSuperview()
+            make.height.equalTo(24)
+            make.centerX.equalToSuperview()
+            make.left.equalToSuperview().offset(60)
+            make.right.equalToSuperview().offset(-60)
+        }
+        
         scrollView.snp.makeConstraints{(make) -> Void in
-            make.size.equalToSuperview()
+            make.width.equalToSuperview()
+            make.bottom.equalToSuperview()
+            make.top.equalTo(urlText.snp.bottom).offset(4)
         }
         
         collectionView.snp.makeConstraints{(make) -> Void in
@@ -133,7 +149,12 @@ extension MainController: NSCollectionViewDataSource{
             
         case .Play:
 //            ff.play("/Users/steven/Movies/Video/S8.mp4")
-            ff.play("/Users/steven/Movies/Video/luoxiang.flv")
+//            ff.play("/Users/steven/Movies/Video/luoxiang.flv")
+//            ff.play("rtmp://localhost:1935/hls/app")
+            let url = urlText.stringValue
+            if !url.isEmpty {
+                ff.play(url)
+            }
         }
     }
     

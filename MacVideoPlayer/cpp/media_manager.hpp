@@ -276,6 +276,12 @@ private:
     /// @param pts 当前视频pts
     static double synchronize_video(MediaData *md, AVFrame *srcFrame, double pts);
     
+    static int decode_interrupt_cb(void *ctx)
+    {
+        MediaData *md = (MediaData*) ctx;
+        return md->pause;
+    }
+    
 };
 
 

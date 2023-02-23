@@ -964,6 +964,11 @@ void MediaManager::play(const char* url) {
         cout<<"open url failed"<<endl;
         return;
     }
+    //当播放网络流时，av_read_frame()可能会无法立即返回；
+    //当点击关闭按钮时会一直卡在这里，如果需要立即关闭就要设置回调，回调函数返回1时，该函数就会立即返回，从而快速关闭播放器
+    inFmt->interrupt_callback.callback = decode_interrupt_cb;
+    inFmt->interrupt_callback.opaque = &mediaData;
+    
     avformat_find_stream_info(inFmt, NULL);
     //打印视频信息
     av_dump_format(inFmt, 0, url, 0);
