@@ -44,7 +44,7 @@ class MainController: NSViewController{
         let scrollView = NSScrollView.init()
         let collectionView = NSCollectionView.init()
         
-        urlText.placeholderString = "请输入播放地址rtmp、ftp、rtsp、本地文件"
+        urlText.placeholderString = "请输入播放地址http、rtmp、ftp、rtsp、本地文件"
         urlText.maximumNumberOfLines = 1
         
         self.view.addSubview(scrollView)
@@ -60,7 +60,7 @@ class MainController: NSViewController{
         collectionView.collectionViewLayout = viewLayout
         
         urlText.snp.makeConstraints{make -> Void in
-            make.top.equalToSuperview()
+            make.top.equalToSuperview().offset(4)
             make.height.equalTo(24)
             make.centerX.equalToSuperview()
             make.left.equalToSuperview().offset(60)
