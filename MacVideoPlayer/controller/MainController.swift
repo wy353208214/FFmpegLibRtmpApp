@@ -17,13 +17,14 @@ enum UserEvent {
     case Convet_AAC
     case Stop_Record
     case PUSH_STREAM
-    case Play
+    case PLAY
+    case STOP
 }
 
 class MainController: NSViewController{
     
-    private var events: NSArray = [UserEvent.Record_Video, UserEvent.Record_Audio, UserEvent.Record_ALL, UserEvent.Convet_AAC, UserEvent.Stop_Record, UserEvent.PUSH_STREAM, UserEvent.Play]
-    private var datas: NSArray = ["录制视频", "录制音频", "录取音视频", "PCM转化AAC", "停止录制", "推流", "播放视频"]
+    private var events: NSArray = [UserEvent.Record_Video, UserEvent.Record_Audio, UserEvent.Record_ALL, UserEvent.Convet_AAC, UserEvent.Stop_Record, UserEvent.PUSH_STREAM, UserEvent.PLAY, UserEvent.STOP]
+    private var datas: NSArray = ["录制视频", "录制音频", "录取音视频", "PCM转化AAC", "停止录制", "开始推流", "播放视频", "退出播放"]
     
     private let ff = OcMediaManager.init()
     
@@ -80,6 +81,12 @@ class MainController: NSViewController{
         
         collectionView.register(MyCellItem.self, forItemWithIdentifier:  NSUserInterfaceItemIdentifier(rawValue: "Cell"))
         
+    }
+
+    
+    override func viewDidDisappear() {
+        super.viewDidDisappear()
+        ff.exit()
     }
 }
 
@@ -146,8 +153,7 @@ extension MainController: NSCollectionViewDataSource{
             ff.convertPcm2AAC()
         case .PUSH_STREAM:
             ff.pushStream()
-            
-        case .Play:
+        case .PLAY:
 //            ff.play("/Users/steven/Movies/Video/S8.mp4")
 //            ff.play("/Users/steven/Movies/Video/luoxiang.flv")
 //            ff.play("rtmp://localhost:1935/hls/app")
@@ -155,6 +161,8 @@ extension MainController: NSCollectionViewDataSource{
             if !url.isEmpty {
                 ff.play(url)
             }
+        case .STOP:
+            ff.stop()
         }
     }
     

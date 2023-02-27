@@ -1057,10 +1057,10 @@ void MediaManager::play(const char* url) {
                 switch (event.key.keysym.sym) {
                     case SDLK_p:
                         if (mediaData.pause) {
+                            //恢复暂停时，要重新同步系统时间
                             mediaData.frame_timer += av_gettime() / 1000000.0 - mediaData.frame_last_update;
                         }
                         mediaData.pause = !mediaData.pause;
-                        cout<<(mediaData.pause ? "Stop" : "Start")<<endl;
                         break;
                 }
                 break;
@@ -1113,6 +1113,15 @@ _End:
     
     cout<<"Play is end"<<endl;
 }
+
+
+void MediaManager::stop(){
+//    mediaData.quit = true;
+    SDL_Event event;
+    event.type = SDL_QUIT;
+    SDL_PushEvent(&event);
+}
+
 
 int MediaManager::demuxePacket(void *data) {
     MediaData *md = (MediaData*) data;

@@ -23,7 +23,8 @@ typedef NS_ENUM(NSInteger, ORecordType) {
 - (void) openFile: (NSString*) url;
 - (void) pushStream;
 - (void) play: (NSString*) url;
-
+- (void) stop;
+- (void) exit;
 @end
 
 NS_ASSUME_NONNULL_END

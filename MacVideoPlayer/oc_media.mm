@@ -10,14 +10,14 @@
 
 @implementation OcMediaManager
 
-MediaManager *myTest;
+MediaManager *manager;
 
 - (instancetype)init
 {
     self = [super init];
     if (self) {
-        if (myTest == NULL) {
-            myTest = new MediaManager();
+        if (manager == NULL) {
+            manager = new MediaManager();
         }
     }
     return self;
@@ -27,13 +27,13 @@ MediaManager *myTest;
 
     switch (type) {
         case OC_VIDEO:
-            myTest->startRecord(VIDEO);
+            manager->startRecord(VIDEO);
             break;
         case OC_AUDIO:
-            myTest->startRecord(AUDIO);
+            manager->startRecord(AUDIO);
             break;
         case OC_ALL:
-            myTest->startRecord(ALL);
+            manager->startRecord(ALL);
             break;
         default:
             NSLog(@"Record None");
@@ -42,27 +42,35 @@ MediaManager *myTest;
 }
 
 - (void) stopRecord{
-    myTest->stopRecord();
+    manager->stopRecord();
 //    delete myTest;
 }
 
 - (void) convertPcm2AAC{
-    myTest->convertPcm2AAC();
+    manager->convertPcm2AAC();
 }
 
 
 - (void) openFile: (NSString*) url {
     const char *url_ = [url UTF8String];
-    myTest->openFile(url_);
+    manager->openFile(url_);
 }
 
 - (void) pushStream {
-    myTest->pushStream();
+    manager->pushStream();
 }
 
 - (void) play: (NSString*) url {
     const char *url_ = [url UTF8String];
-    myTest->play(url_);
+    manager->play(url_);
+}
+
+- (void) stop {
+    manager->stop();
+}
+
+- (void) exit {
+    delete manager;
 }
 
 @end

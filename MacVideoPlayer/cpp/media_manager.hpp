@@ -111,6 +111,9 @@ public:
     /// @param url 文件路径或者流媒体地址
     void play(const char *url);
     
+    /// 停止播放
+    void stop();
+    
 private:
     //音频缓冲区大小
     static const size_t MAX_AUDIO_FRAME_SIZE = 192000;
