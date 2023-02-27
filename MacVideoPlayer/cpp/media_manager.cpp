@@ -1100,7 +1100,10 @@ _End:
         sws_freeContext(mediaData.swsContext);
     }
     
+    cout<<"All Thread is end"<<endl;
+    
     videoPktQueue->discardAll(disCardCallBack);
+    videoPicQueue->discardAll(disCardCallBack);
     audioPktQueue->discardAll(disCardCallBack);
     audioFrameQueue->discardAll(disCardCallBack);
     delete videoPktQueue;
@@ -1240,8 +1243,10 @@ int MediaManager::decodeVideoPacket(void *data) {
             md->videoPicQueue->put(vp);
         }
         //释放pkt，并放入重复队列使用
-        av_packet_unref(pkt);
-        md->videoPktQueue->putToUsed(pkt);
+        if (pkt != NULL) {
+            av_packet_unref(pkt);
+            md->videoPktQueue->putToUsed(pkt);
+        }
     }
     
     cout<<"decodeVideoPacket end"<<endl;
@@ -1293,8 +1298,10 @@ int MediaManager::decodeAudioPacket(void *data) {
             }
             md->audioFrameQueue->put(frame);
         }
-        av_packet_unref(pkt);
-        md->videoPktQueue->putToUsed(pkt);
+        if (pkt != NULL) {
+            av_packet_unref(pkt);
+            md->videoPktQueue->putToUsed(pkt);
+        }
         
     }
     cout<<"decodeAudioPacket end"<<endl;
