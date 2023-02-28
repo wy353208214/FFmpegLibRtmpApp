@@ -72,11 +72,16 @@ struct MediaData {
     int audio_len;
     //当前正在播放的音频位置
     int audio_buffer_index;
-    
     uint8_t *audio_buffer1;
     
     //视频帧转换器
     SwsContext *swsContext;
+    //窗口宽高
+    int sdl_window_width;
+    int sdl_window_height;
+    //视频Frame宽高
+    int frame_width;
+    int frame_height;
     
     //音频时钟
     double audio_clock;
@@ -284,6 +289,8 @@ private:
         MediaData *md = (MediaData*) ctx;
         return md->pause;
     }
+    
+    void rescalFrameSize(int &srcW, int &srcH, int dsW, int dsH);
     
 };
 

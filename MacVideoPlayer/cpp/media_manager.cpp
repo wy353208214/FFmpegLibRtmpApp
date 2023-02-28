@@ -1018,6 +1018,10 @@ void MediaManager::play(const char* url) {
     mediaData.render = render;
     mediaData.texture = texture;
     mediaData.quit = false;
+    mediaData.sdl_window_width = videoDecodeCtx->width;
+    mediaData.sdl_window_height = videoDecodeCtx->height;
+    mediaData.frame_width = videoDecodeCtx->width;
+    mediaData.frame_height = videoDecodeCtx->height;
     
     
     //启动刷新定时器
@@ -1042,7 +1046,15 @@ void MediaManager::play(const char* url) {
                 // 这里可以监听窗口变化从而更新图像大小，适应窗口变化
                 if (event.window.event == SDL_WINDOWEVENT_RESIZED)
                 {
-                    cout<<"windows size is changed"<<endl;
+                    SDL_GetWindowSize(window, &(mediaData.sdl_window_width), &(mediaData.sdl_window_height));
+                    //重新计算frame宽高
+                    rescalFrameSize(mediaData.frame_width, mediaData.frame_height, mediaData.sdl_window_width, mediaData.sdl_window_height);
+                    //重置swsContext参数
+                    sws_getCachedContext(mediaData.swsContext, mediaData.videoDecodeCtx->width, mediaData.videoDecodeCtx->height, mediaData.videoDecodeCtx->pix_fmt, mediaData.frame_width,
+                                         mediaData.frame_height, AV_PIX_FMT_YUV420P, SWS_BILINEAR, NULL, NULL, NULL);
+                    //宽高如果变的话，需要更新texture
+                    SDL_DestroyTexture(mediaData.texture);
+                    mediaData.texture = SDL_CreateTexture(render, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, mediaData.frame_width, mediaData.frame_height);
                 }
                 break;
             case SDL_QUIT:
@@ -1081,9 +1093,9 @@ _End:
     SDL_WaitThread(decodeVideoThread, NULL);
     SDL_WaitThread(decodeAudioThread, NULL);
     
-    SDL_DestroyWindow(window);
-    SDL_DestroyTexture(texture);
-    SDL_DestroyRenderer(render);
+    SDL_DestroyWindow(mediaData.window);
+    SDL_DestroyTexture(mediaData.texture);
+    SDL_DestroyRenderer(mediaData.render);
     SDL_CloseAudio();
     SDL_Quit();
     
@@ -1116,7 +1128,6 @@ _End:
 
 
 void MediaManager::stop(){
-//    mediaData.quit = true;
     SDL_Event event;
     event.type = SDL_QUIT;
     SDL_PushEvent(&event);
@@ -1320,20 +1331,19 @@ int MediaManager::decodeAudioPacket(void *data) {
 int resize = 1;
 
 void MediaManager::updateTexture(AVFrame *frame) {
+
     //要转换的视频
-    int width = mediaData.videoDecodeCtx->width;
-    int height =  mediaData.videoDecodeCtx->height;
+    int width = mediaData.frame_width;
+    int height =  mediaData.frame_height;
     
     //TODO
     //这里可以做优化，如果pix_fmt格式一样，就无需转换
     int numBytes = av_image_get_buffer_size(AV_PIX_FMT_YUV420P, width, height, 1);
     uint8_t *video_out_buffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
     AVFrame *convertFrame = av_frame_alloc();
-    av_image_fill_arrays(convertFrame->data, convertFrame->linesize, video_out_buffer, AV_PIX_FMT_YUV420P,
-                         width, height, 1);
-    sws_scale(mediaData.swsContext, (const uint8_t *const *)frame->data, frame->linesize, 0, height, convertFrame->data, convertFrame->linesize);
+    av_image_fill_arrays(convertFrame->data, convertFrame->linesize, video_out_buffer, AV_PIX_FMT_YUV420P, width, height, 1);
+    sws_scale(mediaData.swsContext, (const uint8_t *const *)frame->data, frame->linesize, 0, mediaData.videoDecodeCtx->height, convertFrame->data, convertFrame->linesize);
     
-
     // SDL渲染显示视频
     SDL_UpdateYUVTexture(mediaData.texture, NULL,
                          convertFrame->data[0], convertFrame->linesize[0],
@@ -1341,15 +1351,11 @@ void MediaManager::updateTexture(AVFrame *frame) {
                          convertFrame->data[2], convertFrame->linesize[2]);
 
     // 设置渲染的位置（0，0）代表window的左上角，以下方式计算可以保证居中显示
-    //    rect.x = (win_width - video_width) / 2;
-    //    rect.y = (win_height - video_height) / 2;
-    //    rect.w = video_width;
-    //    rect.h = video_height;
-
-    mediaData.rect.x = 0;
-    mediaData.rect.y = 0;
+    mediaData.rect.x = (mediaData.sdl_window_width - width) / 2;
+    mediaData.rect.y = (mediaData.sdl_window_height - height) / 2;
     mediaData.rect.w = width;
     mediaData.rect.h = height;
+
     //显示图片
     SDL_LockMutex(text_mutex);
     SDL_RenderClear(mediaData.render);
@@ -1361,6 +1367,27 @@ void MediaManager::updateTexture(AVFrame *frame) {
     //释放资源
     av_free(video_out_buffer);
     av_frame_free(&convertFrame);
+}
+
+
+void MediaManager::rescalFrameSize(int &srcW, int &srcH, int dsW, int dsH) {
+    // 重新计算视频比例尺寸
+    double video_aspect_ratio = (double)srcW / srcH;
+    double win_aspect_ratio = (double)dsW / dsH;
+    if (video_aspect_ratio > win_aspect_ratio)
+    {
+        srcW = dsW;
+        srcH = dsW / video_aspect_ratio;
+    }
+    else if (video_aspect_ratio < win_aspect_ratio)
+    {
+        srcH = dsH;
+        srcW = dsH * video_aspect_ratio;
+    }
+    
+    //Warning: data is not aligned! This can lead to a speed loss
+    srcW = (srcW >> 4) << 4;
+    srcH = (srcH >> 4) << 4;
 }
 
 
