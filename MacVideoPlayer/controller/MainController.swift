@@ -30,10 +30,10 @@ class MainController: NSViewController{
     
     let urlText = NSTextField.init()
     
+    
     override func loadView() {
         self.view = NSView(frame: CGRect(x: 0, y: 0, width: 480, height: 320))
     }
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -83,6 +83,9 @@ class MainController: NSViewController{
         
     }
 
+    override func viewDidAppear() {
+        self.view.window?.title = "播放器"
+    }
     
     override func viewDidDisappear() {
         super.viewDidDisappear()
